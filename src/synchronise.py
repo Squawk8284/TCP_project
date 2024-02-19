@@ -255,23 +255,40 @@ def reliable_data_receiver():
 
 def reliable_data_transmit_and_receive_ack(DATA_MESSAGE):
     global FAILSAFE_EVENT
-    global START_SUCCESS
     global RETRIES
+    global START_SUCCESS
+    global DEVICES
+
     RETRIES = 0
     received_acks = set()
-    multicast_send(DATA_MESSAGE)
-    print("Sent DATA MESSAGE")
-    time.sleep(RTO)
-    if(RETRIES==MAX_RETRIES):
-        FAILSAFE_EVENT = True
-        print("Failsafe Triggered")
-        RETRIES = 0
-    else:
-        RETRIES += 1
-    received_pkt = next(multicast_recieve())
-    if(received_pkt["type"]=="data_ack" and received_pkt["controller_id"]!=CONTROLLER_ID):
-        print(received_pkt)
-        received_acks.add(received_pkt["controller_id"])
-        if(len(received_acks)==DEVICES):
-            RETRIES = 0
+    #global sync_success
+    while (START_SUCCESS and not(FAILSAFE_EVENT)):
+       
+        multicast_send(DATA_MESSAGE)
+        print("Sent DATA MESSAGE")
+           
+        while len(received_acks) < DEVICES-1:
+           
+            received_pkt = next(multicast_recieve())
+            time.sleep(RTO)
+           
+            if(received_pkt["type"]=="data_ack" and received_pkt["controller_id"]!=CONTROLLER_ID):
+                print(received_pkt)
+                received_acks.add(received_pkt["controller_id"])
+ 
+                if len(received_acks) == DEVICES-1:
+                    received_acks = set()
+                    RETRIES = 0
+                    break
+           
+            if (RETRIES > MAX_RETRIES):
+                FAILSAFE_EVENT = True
+                print("Failsafe Triggered")
+                break
+           
+            else:
+                multicast_send(DATA_MESSAGE)
+                RETRIES += 1
+                received_acks.clear()
+ 
  
