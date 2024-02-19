@@ -258,6 +258,7 @@ def reliable_data_transmit_and_receive_ack(DATA_MESSAGE):
     global RETRIES
     global START_SUCCESS
     global DEVICES
+    global DATA_SUCCESS
 
     RETRIES = 0
     received_acks = set()
@@ -279,6 +280,7 @@ def reliable_data_transmit_and_receive_ack(DATA_MESSAGE):
                 if len(received_acks) == DEVICES-1:
                     received_acks = set()
                     RETRIES = 0
+                    DATA_SUCCESS = True
                     break
            
             if (RETRIES > MAX_RETRIES):
