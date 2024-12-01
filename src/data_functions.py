@@ -26,7 +26,7 @@ fail_safe_flag = False
 prev_slots_total = [prev_slot,False,False,False]
 prev_queue_top = -1
 
-def read_queue(id,row,file = "queue1.txt"):
+def read_queue(id,row,file = FILE_PATH):
     file_name = file
     target_row = row
     queue_sum = 0
