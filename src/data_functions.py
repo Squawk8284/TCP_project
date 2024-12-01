@@ -146,6 +146,8 @@ def state_table_update(id):
             continue
     
 def base_process():
+    while(not(START_SUCCESS) and not(FAILSAFE_EVENT)):
+        pass
     global prev_queue_top,READ_QUEUE_FLAG,FAILSAFE_EVENT,DATA_SUCCESS,START_SUCCESS #Check how to use shared flag from failsafe thread
     row = 0
     #Starting the queue reading, ntp start time is required,
@@ -178,6 +180,8 @@ def base_process():
                 continue
 
 def time_update(time_initial):
+    while(not(START_SUCCESS) and not(FAILSAFE_EVENT)):
+        pass
     global READ_QUEUE_FLAG
     with lock:
         while(not(FAILSAFE_EVENT) and START_SUCCESS):

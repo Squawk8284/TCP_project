@@ -46,17 +46,9 @@ def main():
     start_success_update_thread.start()
     fail_safe_receiver_thread.start()
     reliable_data_receiver_thread.start()
+    base_thread.start()
+    time_thread.start()
 
-    while(not(START_SUCCESS)):
-        print("NOT SUCESS")
-        pass
-
-    if(START_SUCCESS):
-        print(RECIEVED_START_TIME)
-        if RECIEVED_START_TIME is not None:
-            print("STARTED DATA")
-            base_thread.start()
-            time_thread.start()
 
 if __name__ == "__main__":
     try:
