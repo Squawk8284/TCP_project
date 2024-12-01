@@ -146,47 +146,45 @@ def state_table_update(id):
             continue
     
 def base_process():
+    global prev_queue_top,READ_QUEUE_FLAG,FAILSAFE_EVENT,DATA_SUCCESS,START_SUCCESS #Check how to use shared flag from failsafe thread
     while(not(START_SUCCESS) and not(FAILSAFE_EVENT)):
         pass
-    global prev_queue_top,READ_QUEUE_FLAG,FAILSAFE_EVENT,DATA_SUCCESS,START_SUCCESS #Check how to use shared flag from failsafe thread
     row = 0
     #Starting the queue reading, ntp start time is required,
-    with lock:
-        while(not(FAILSAFE_EVENT) and START_SUCCESS):
-            if(time.localtime()>RECIEVED_START_TIME):
-                if(not(FAILSAFE_EVENT)):
-                    if(READ_QUEUE_FLAG == True):
-                        update(prev_queue_top)
-                        row += 1
-                        queue[CONTROLLER_ID-1] += read_queue(CONTROLLER_ID,row)
-                        if(DATA_SUCCESS):
-                            state_table_update(CONTROLLER_ID)
-                            DATA_SUCCESS = False
-                        if(queue[CONTROLLER_ID-1] > 0):
-                            prev_queue_top = decision(queue)
-                            broadcast(CONTROLLER_ID)
-                            READ_QUEUE_FLAG.reset()
-                        else :
-                            continue
-                        
-                    #After Every time slot show the precalculated values.
-                    green_indices = [index for index,value in enumerate(total_slots) if value == "green"]
-                    if(len(green_indices)>1):
-                        FAILSAFE_EVENT = True
-                        fail_safe_transmitter()                    
-                else:
-                    continue
+    while(not(FAILSAFE_EVENT) and START_SUCCESS):
+        if(time.localtime()>RECIEVED_START_TIME):
+            if(not(FAILSAFE_EVENT)):
+                if(READ_QUEUE_FLAG == True):
+                    update(prev_queue_top)
+                    row += 1
+                    queue[CONTROLLER_ID-1] += read_queue(CONTROLLER_ID,row)
+                    if(DATA_SUCCESS):
+                        state_table_update(CONTROLLER_ID)
+                        DATA_SUCCESS = False
+                    if(queue[CONTROLLER_ID-1] > 0):
+                        prev_queue_top = decision(queue)
+                        broadcast(CONTROLLER_ID)
+                        READ_QUEUE_FLAG.reset()
+                    else :
+                        continue
+                    
+                #After Every time slot show the precalculated values.
+                green_indices = [index for index,value in enumerate(total_slots) if value == "green"]
+                if(len(green_indices)>1):
+                    FAILSAFE_EVENT = True
+                    fail_safe_transmitter()                    
             else:
                 continue
+        else:
+            continue
 
 def time_update(time_initial):
+    global READ_QUEUE_FLAG
     while(not(START_SUCCESS) and not(FAILSAFE_EVENT)):
         pass
-    global READ_QUEUE_FLAG
-    with lock:
-        while(not(FAILSAFE_EVENT) and START_SUCCESS):
-            if(time.localtime()>RECIEVED_START_TIME):
-                time.sleep(SLOT_TIME)
-                #Measure and track 60 second elapse
-                if(not(READ_QUEUE_FLAG)):
-                    READ_QUEUE_FLAG.set()
+    while(not(FAILSAFE_EVENT) and START_SUCCESS):
+        if(time.localtime()>RECIEVED_START_TIME):
+            time.sleep(SLOT_TIME)
+            #Measure and track 60 second elapse
+            if(not(READ_QUEUE_FLAG)):
+                READ_QUEUE_FLAG.set()
