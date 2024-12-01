@@ -28,7 +28,7 @@ DATA_SUCCESS = False
 
 MASTER_SYNC_SUCCESS = True
 RECIEVED_START_TIME = None
-IS_NTP_TIME_SET = False
+IS_NTP_TIME_SET = True
 READ_QUEUE_FLAG = False
 
 lock = threading.Lock()
