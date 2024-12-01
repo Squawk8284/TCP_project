@@ -16,7 +16,6 @@ def generate_random_numbers_in_file(file_path, rows=10):
 
 if __name__ == "__main__":
     # Set file path and number of rows to generate
-    for i in range(1,5):
-        file_path = f'queue{i}.txt'
-        generate_random_numbers_in_file(file_path)  # Correct function call
-        print(f"File '{file_path}' has been created with random numbers.")
+    file_path = f'queue1.txt'
+    generate_random_numbers_in_file(file_path)  # Correct function call
+    print(f"File '{file_path}' has been created with random numbers.")
