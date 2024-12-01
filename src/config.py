@@ -1,4 +1,3 @@
-import threading
 
 MASTER_CONTROLLER_ID = 1
 CONTROLLER_ID = 2
@@ -7,23 +6,12 @@ DEVICES = 3
 MULTICAST_GROUP = "224.0.0.1"
 PORT = 5007
 
-FAILSAFE_EVENT = False
-FAIL_SAFE_ACK_RECEIVED = False
-
-SYNC_SUCCESS = False
-START_SUCCESS = False
-
-MASTER_SYNC_SUCCESS = True
-RECIEVED_START_TIME = None
-RETRIES = 0
-SEQUENCE_NO = 0
-lock = threading.Lock()
+FILE_PATH = f'queue1.txt'
 
 TIME_OFFSET = 60
 RTO = 10
+RETRIES = 0
 MAX_RETRIES = 20
-
-RECIEVED_CONTROLLER_ID = None
 
 SYNC_REQ_MESSAGE = {"type": "sync_request", "controller_id": MASTER_CONTROLLER_ID}
 SYNC_ACK_MESSAGE = {"type": "sync_ack", "controller_id": CONTROLLER_ID}
