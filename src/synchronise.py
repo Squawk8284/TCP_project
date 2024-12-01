@@ -88,6 +88,7 @@ def reliable_start_ack():
         received_pkt = next(multicast_recieve())
         if(received_pkt["type"]=="start_ack"):
             received_acks.add(received_pkt["controller_id"])
+            print("ACk recieved from: ", received_acks["controller_id"])
             print(received_pkt["controller_id"])
             if(len(received_acks)==DEVICES-1):
                 multicast_send(START_ACK_MESSAGE)
