@@ -60,10 +60,12 @@ def reliable_start():
     global SYNC_SUCCESS
     global RETRIES
     global START_SUCCESS
+    global RECIEVED_START_TIME
     RETRIES = 0
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and not(START_SUCCESS)):
         continue
     START_REQ_MESSAGE["timestamp"] = addOffset(time.localtime(),TIME_OFFSET)
+    RECIEVED_START_TIME = START_REQ_MESSAGE["timestamp"]
     while(not(FAILSAFE_EVENT) and not(START_SUCCESS)):
         multicast_send(START_REQ_MESSAGE)
         print("Sent start message")
@@ -89,7 +91,7 @@ def reliable_start_ack():
         if(received_pkt["type"]=="start_ack"):
             received_acks.add(received_pkt["controller_id"])
             print(received_pkt["controller_id"])
-            if(len(received_acks)==DEVICES):
+            if(len(received_acks)==DEVICES-1):
                 START_SUCCESS = True
                 multicast_send(START_ACK_MESSAGE)
                 print("start_success")
