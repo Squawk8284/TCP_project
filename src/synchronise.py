@@ -126,8 +126,9 @@ def start_req_handler():
 
 def sync_success_update():
     global SYNC_SUCCESS
+    global FAILSAFE_EVENT
 
-    while(not(SYNC_SUCCESS)):
+    while(not(SYNC_SUCCESS) and not(FAILSAFE_EVENT)):
         recieved_pkt = next(multicast_recieve())
         if (recieved_pkt["type"]=="sync_ack" and recieved_pkt["controller_id"]==MASTER_CONTROLLER_ID):
             SYNC_SUCCESS = True
