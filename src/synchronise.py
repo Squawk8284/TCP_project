@@ -137,8 +137,9 @@ def sync_success_update():
 
 def start_success_update():
     global START_SUCCESS
+    global FAILSAFE_EVENT
 
-    while(not(START_SUCCESS)):
+    while(not(START_SUCCESS) and not(FAILSAFE_EVENT)):
         recieved_pkt = next(multicast_recieve())
         if (recieved_pkt["type"]=="start_ack" and recieved_pkt["controller_id"]==MASTER_CONTROLLER_ID):
             START_SUCCESS = True
