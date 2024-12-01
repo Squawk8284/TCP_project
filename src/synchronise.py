@@ -40,7 +40,7 @@ def handle_sync_requests():
     while (not(SYNC_SUCCESS) and not(FAILSAFE_EVENT)):
         message = next(multicast_recieve())
         if message["type"] == "sync_request":
-            print("Received sync request", message["controller_id"])
+            print("Received sync request from controller: ", message["controller_id"])
             if IS_NTP_TIME_SET:
                 multicast_send(SYNC_ACK_MESSAGE)
                 print("Sent SYNC ACK")
@@ -88,6 +88,7 @@ def reliable_start_ack():
         received_pkt = next(multicast_recieve())
         if(received_pkt["type"]=="start_ack"):
             received_acks.add(received_pkt["controller_id"])
+            print(received_pkt["controller_id"])
             if(len(received_acks)==DEVICES):
                 START_SUCCESS = True
                 multicast_send(START_ACK_MESSAGE)

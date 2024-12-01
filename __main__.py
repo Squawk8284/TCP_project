@@ -9,14 +9,14 @@ def main():
     gpio_setup()
 
     # ---------- ENSURE TO COMMENT BELOW IF NOT MASTER---------------------------
-    # sync_req_master_thread = threading.Thread(target=reliable_sync_request_master)
-    # sync_ack_master_thread = threading.Thread(target=reliable_sync_ack_master)
-    # start_req_master_thread = threading.Thread(target=reliable_start)
-    # start_ack_master_thread = threading.Thread(target=reliable_start_ack)
-    # sync_req_master_thread.start()
-    # sync_ack_master_thread.start()
-    # start_req_master_thread.start()
-    # start_ack_master_thread.start()
+    sync_req_master_thread = threading.Thread(target=reliable_sync_request_master)
+    sync_ack_master_thread = threading.Thread(target=reliable_sync_ack_master)
+    start_req_master_thread = threading.Thread(target=reliable_start)
+    start_ack_master_thread = threading.Thread(target=reliable_start_ack)
+    sync_req_master_thread.start()
+    sync_ack_master_thread.start()
+    start_req_master_thread.start()
+    start_ack_master_thread.start()
     # ---------------------------------------------------------------------------
 
     sync_success_update_thread = threading.Thread(target=sync_success_update)
