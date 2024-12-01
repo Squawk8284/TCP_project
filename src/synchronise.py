@@ -30,7 +30,6 @@ def reliable_sync_ack_master():
             if(len(received_acks)==DEVICES-1):
                 SYNC_SUCCESS = True
                 print("sync_success")
-                received_acks = set()
 
     
 def handle_sync_requests():
@@ -93,7 +92,6 @@ def reliable_start_ack():
             if(len(received_acks)==DEVICES-1):
                 multicast_send(START_ACK_MESSAGE)
                 print("start_success")
-                received_acks = set()
 
 
 def start_req_handler():
@@ -203,6 +201,5 @@ def reliable_data_transmit_and_receive_ack(DATA_MESSAGE):
         print(received_pkt)
         received_acks.add(received_pkt["controller_id"])
         if(len(received_acks)==DEVICES):
-            received_acks = set()
             RETRIES = 0
  
