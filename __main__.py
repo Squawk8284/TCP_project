@@ -6,6 +6,8 @@ from src.generate_traffic import generate_random_numbers_in_file
 
 
 def main():
+    print("PROGRAM STARTED ........\n")
+
     gpio_setup()
     # -------------------------- COMMENT IF MASTER -----------------------------
     start_req_handler_thread = threading.Thread(target=start_req_handler)
@@ -16,6 +18,7 @@ def main():
 
 
     # ---------- COMMENT IF NOT MASTER---------------------------
+<<<<<<< HEAD
     #sync_req_master_thread = threading.Thread(target=reliable_sync_request_master)
     #sync_ack_master_thread = threading.Thread(target=reliable_sync_ack_master)
     #start_req_master_thread = threading.Thread(target=reliable_start)
@@ -24,6 +27,16 @@ def main():
     #sync_ack_master_thread.start()
     #start_req_master_thread.start()
     #start_ack_master_thread.start()
+=======
+    # sync_req_master_thread = threading.Thread(target=reliable_sync_request_master)
+    # sync_ack_master_thread = threading.Thread(target=reliable_sync_ack_master)
+    # start_req_master_thread = threading.Thread(target=reliable_start)
+    # start_ack_master_thread = threading.Thread(target=reliable_start_ack)
+    # sync_req_master_thread.start()
+    # sync_ack_master_thread.start()
+    # start_req_master_thread.start()
+    # start_ack_master_thread.start()
+>>>>>>> da2b0c9f039b871851e66aa37fd6218a3857d941
     # ---------------------------------------------------------------------------
 
 
@@ -47,6 +60,7 @@ def main():
 
     if(START_SUCCESS):
         if RECIEVED_START_TIME is not None:
+            print("STARTED DATA")
             base_thread.start()
             time_thread.start()
 
