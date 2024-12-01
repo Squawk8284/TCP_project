@@ -47,6 +47,10 @@ def main():
     fail_safe_receiver_thread.start()
     reliable_data_receiver_thread.start()
 
+    while(not(START_SUCCESS)):
+        print("NOT SUCESS")
+        pass
+
     if(START_SUCCESS):
         print(RECIEVED_START_TIME)
         if RECIEVED_START_TIME is not None:
