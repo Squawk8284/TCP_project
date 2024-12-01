@@ -27,11 +27,10 @@ def reliable_sync_ack_master():
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
         received_pkt = next(multicast_recieve())
         if(received_pkt["type"]=="sync_ack"):
-            print(received_pkt)
             received_acks.add(received_pkt["controller_id"])
             if(len(received_acks)==DEVICES-1):
                 SYNC_SUCCESS = True
-                print("sync_success = ",SYNC_SUCCESS)
+                print("sync_success")
                 received_acks = set()
 
 
@@ -71,9 +70,6 @@ def reliable_start():
         continue
     START_REQ_MESSAGE["timestamp"] = addOffset(time.localtime(),TIME_OFFSET)
     while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
-        # received_start_time = START_REQ_MESSAGE["timestamp"]
-        # print("received_start_time",received_start_time)
-        print(START_REQ_MESSAGE)
         multicast_send(START_REQ_MESSAGE)
         print("Sent start message")
         time.sleep(RTO)
@@ -96,12 +92,11 @@ def reliable_start_ack():
     while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
         received_pkt = next(multicast_recieve())
         if(received_pkt["type"]=="start_ack"):
-            print(received_pkt)
             received_acks.add(received_pkt["controller_id"])
             if(len(received_acks)==DEVICES):
                 START_SUCCESS = True
                 multicast_send(START_ACK_MESSAGE)
-                print("start_success = ",START_SUCCESS)
+                print("start_success")
                 received_acks = set()
 
 
