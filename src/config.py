@@ -1,18 +1,18 @@
 
 MASTER_CONTROLLER_ID = 1
-CONTROLLER_ID = 1
+CONTROLLER_ID = 4
 DEVICES = 4
 
 MULTICAST_GROUP = "224.0.0.1"
 PORT = 5007
 
-FILE_PATH = f'queue1.txt'
+FILE_PATH = f'src/queue1.txt'
 
 TIME_OFFSET = 60
 SLOT_TIME = 10
-RTO = 10
+RTO = 30
 RETRIES = 0
-MAX_RETRIES = 20
+MAX_RETRIES = 7
 
 SYNC_REQ_MESSAGE = {"type": "sync_request", "controller_id": MASTER_CONTROLLER_ID}
 SYNC_ACK_MESSAGE = {"type": "sync_ack", "controller_id": CONTROLLER_ID}
