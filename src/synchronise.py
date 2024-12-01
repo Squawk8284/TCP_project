@@ -7,7 +7,6 @@ def reliable_sync_request_master():
     global FAILSAFE_EVENT
     global SYNC_SUCCESS
     global MASTER_SYNC_SUCCESS
-    global SEQUENCE_NO
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and MASTER_SYNC_SUCCESS):
         multicast_send(SYNC_REQ_MESSAGE)
         print("Sent message")
@@ -27,27 +26,21 @@ def reliable_sync_ack_master():
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
         received_pkt = next(multicast_recieve())
         if(received_pkt["type"]=="sync_ack"):
-            print(received_pkt)
             received_acks.add(received_pkt["controller_id"])
             if(len(received_acks)==DEVICES-1):
                 SYNC_SUCCESS = True
-                print("sync_success = ",SYNC_SUCCESS)
-                received_acks = set()
+                print("sync_success")
 
-
-
-def is_ntp_time_sync_set():
-    #TODO NTP SYNC
-    return True
     
 def handle_sync_requests():
     global SYNC_SUCCESS
     global FAILSAFE_EVENT
+    global IS_NTP_TIME_SET
     while (not(SYNC_SUCCESS) and not(FAILSAFE_EVENT)):
         message = next(multicast_recieve())
         if message["type"] == "sync_request":
-            print("Received sync request", message["controller_id"])
-            if is_ntp_time_sync_set():
+            print("Received sync request from controller: ", message["controller_id"])
+            if IS_NTP_TIME_SET:
                 multicast_send(SYNC_ACK_MESSAGE)
                 print("Sent SYNC ACK")
             else:
@@ -66,14 +59,12 @@ def reliable_start():
     global SYNC_SUCCESS
     global RETRIES
     global START_SUCCESS
-    # global received_start_time
+    global RECIEVED_START_TIME
+    RETRIES = 0
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and not(START_SUCCESS)):
         continue
     START_REQ_MESSAGE["timestamp"] = addOffset(time.localtime(),TIME_OFFSET)
-    while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
-        # received_start_time = START_REQ_MESSAGE["timestamp"]
-        # print("received_start_time",received_start_time)
-        print(START_REQ_MESSAGE)
+    while(not(FAILSAFE_EVENT) and not(START_SUCCESS)):
         multicast_send(START_REQ_MESSAGE)
         print("Sent start message")
         time.sleep(RTO)
@@ -96,19 +87,17 @@ def reliable_start_ack():
     while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
         received_pkt = next(multicast_recieve())
         if(received_pkt["type"]=="start_ack"):
-            print(received_pkt)
             received_acks.add(received_pkt["controller_id"])
-            if(len(received_acks)==DEVICES):
-                START_SUCCESS = True
+            print("ACk recieved from: ", received_acks["controller_id"])
+            print(received_pkt["controller_id"])
+            if(len(received_acks)==DEVICES-1):
                 multicast_send(START_ACK_MESSAGE)
-                print("start_success = ",START_SUCCESS)
-                received_acks = set()
+                print("start_success")
 
 
 def start_req_handler():
     global FAILSAFE_EVENT
     global SYNC_SUCCESS
-    global RETRIES
     global START_SUCCESS
     global RECIEVED_START_TIME
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
@@ -145,15 +134,7 @@ def start_success_update():
             START_SUCCESS = True
             print("START_SUCCESS_UPDATED")
 
-# -------------- FAILSAFE ------------------
-
-def fail_safe_transmitter():
-    global FAILSAFE_EVENT
-    
-    multicast_send(FAILSAFE_MESSAGE)
-    FAILSAFE_EVENT = True
-    print("Failsafe Triggered")
- 
+# -------------- FAILSAFE ------------------ 
 
 def fail_safe_receiver():
     global FAILSAFE_EVENT
@@ -164,4 +145,62 @@ def fail_safe_receiver():
             print("FAILSAFE TRIGGERED", message["controller_id"])
             FAILSAFE_EVENT = True
             multicast_send(FAILSAFE_ACK_MESSAGE)
-            # TODO SET THE GPIO PINS
+            gpio_set("yellow")
+
+
+# --------------- DATA --------------------
+
+ 
+ 
+def reliable_data_receiver():
+    global FAILSAFE_EVENT
+    global START_SUCCESS
+    global CONTROLLER_DATA
+    global DATA_SUCCESS
+
+    while(not(FAILSAFE_EVENT) and START_SUCCESS):
+        while(None in CONTROLLER_DATA):
+            received_pkt = next(multicast_recieve())
+            if(received_pkt["type"]=="data" and received_pkt["controller_id"]!=CONTROLLER_ID):
+                parsed_data = {
+                    "left": received_pkt.get("left"),
+                    "centre": received_pkt.get("centre"),
+                    "right": received_pkt.get("right"),
+                    "Total": received_pkt.get("Total"),
+                    "Consecutive_Slots": received_pkt.get("Consecutive_Slots"),
+                    "Total_Slots": received_pkt.get("Total_Slots"),
+                    "Slot": received_pkt.get("Slot"),
+                    "Status": received_pkt.get("LED_state"),}
+                ID = received_pkt["controller_id"]
+                CONTROLLER_DATA[ID-1] = parsed_data
+                print(CONTROLLER_DATA[ID-1])
+                multicast_send(DATA_ACK_MESSAGE)
+                print("Sent DATA ACK for controller", ID)
+
+        DATA_SUCCESS = True
+
+
+
+def reliable_data_transmit_and_receive_ack(DATA_MESSAGE):
+    global FAILSAFE_EVENT
+    global START_SUCCESS
+    global RETRIES
+    RETRIES = 0
+    received_acks = set()
+    #global sync_success
+    multicast_send(DATA_MESSAGE)
+    print("Sent DATA MESSAGE")
+    time.sleep(RTO)
+    if(RETRIES==MAX_RETRIES):
+        FAILSAFE_EVENT = True
+        print("Failsafe Triggered")
+        RETRIES = 0
+    else:
+        RETRIES += 1
+    received_pkt = next(multicast_recieve())
+    if(received_pkt["type"]=="data_ack" and received_pkt["controller_id"]!=CONTROLLER_ID):
+        print(received_pkt)
+        received_acks.add(received_pkt["controller_id"])
+        if(len(received_acks)==DEVICES):
+            RETRIES = 0
+ 
