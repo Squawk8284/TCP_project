@@ -9,13 +9,6 @@ def main():
     print("PROGRAM STARTED ........\n")
 
     gpio_setup()
-    # -------------------------- COMMENT IF MASTER -----------------------------
-    start_req_handler_thread = threading.Thread(target=start_req_handler)
-    start_req_handler_thread.start()
-
-
-    # --------------------------------------------------------------------------
-
 
     # ---------- COMMENT IF NOT MASTER---------------------------
     # sync_req_master_thread = threading.Thread(target=reliable_sync_request_master)
@@ -29,8 +22,10 @@ def main():
     # ---------------------------------------------------------------------------
 
 
+
     sync_success_update_thread = threading.Thread(target=sync_success_update)
     handle_sync_requests_thread = threading.Thread(target=handle_sync_requests)
+    start_req_handler_thread = threading.Thread(target=start_req_handler)
     start_success_update_thread = threading.Thread(target=start_success_update)
     fail_safe_receiver_thread = threading.Thread(target=fail_safe_receiver)
     reliable_data_receiver_thread = threading.Thread(target=reliable_data_receiver)
@@ -41,6 +36,7 @@ def main():
     # Start the threads
     sync_success_update_thread.start()
     handle_sync_requests_thread.start()
+    start_req_handler_thread.start()
     start_success_update_thread.start()
     fail_safe_receiver_thread.start()
     reliable_data_receiver_thread.start()
