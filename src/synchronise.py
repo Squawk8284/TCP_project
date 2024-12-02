@@ -47,7 +47,7 @@ def reliable_sync_ack_master():
         print("IN SYNC ACK MASTER")
         while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
             received_pkt = next(multicast_recieve())
-            if(received_pkt["type"]=="sync_ack" and received_pkt["controller_id"]!=MASTER_CONTROLLER_ID):
+            if(received_pkt["type"]=="sync_ack" and received_pkt["controller_id"]!=MASTER_CONTROLLER_ID and (received_pkt["controller_id"] not in received_sync_acks)):
                 received_sync_acks.add(received_pkt["controller_id"])
                 print("MASTER recieved ack from: ", received_pkt["controller_id"])
                 if(len(received_sync_acks)==DEVICES-1):
@@ -110,7 +110,7 @@ def reliable_start_ack():
         print("IN START ACK MASTER")
         while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
             received_pkt = next(multicast_recieve())
-            if(received_pkt["type"]=="start_ack" and received_pkt["controller_id"]!=MASTER_CONTROLLER_ID):
+            if(received_pkt["type"]=="start_ack" and received_pkt["controller_id"]!=MASTER_CONTROLLER_ID and (received_pkt["controller_id"] not in received_start_acks)):
                 received_start_acks.add(received_pkt["controller_id"])
                 print("ACk recieved from: ", received_pkt["controller_id"])
                 print(received_pkt["controller_id"])
