@@ -216,4 +216,4 @@ def time_update():
             time.sleep(SLOT_TIME)
             #Measure and track 60 second elapse
             if(not(READ_QUEUE_FLAG)):
-                READ_QUEUE_FLAG = False
+                READ_QUEUE_FLAG = True
