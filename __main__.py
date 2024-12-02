@@ -22,10 +22,10 @@ def main():
         start_ack_master_thread.start()
     
     else:
-        start_req_handler_thread = threading.Thread(target=start_req_handler)
         handle_sync_requests_thread = threading.Thread(target=handle_sync_requests)
-        start_req_handler_thread.start()
+        start_req_handler_thread = threading.Thread(target=start_req_handler)
         handle_sync_requests_thread.start()
+        start_req_handler_thread.start()
 
 
 
