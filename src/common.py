@@ -34,6 +34,7 @@ READ_QUEUE_FLAG = False
 lock = threading.Lock()
 READ_QUEUE_FLAG = threading.Event()
 
+
 # ---------------------------- FUNCTIONS -------------------
 
 def ntp_time_sync_master():
