@@ -129,6 +129,7 @@ def decision(queue_list = None):
             filtered_list = [-1 if value != 0 else value for value in total_slots]
             print(filtered_list)
             queue_top = decision(filtered_list)
+            print(queue_top)
     return queue_top
 
 
