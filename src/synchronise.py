@@ -132,18 +132,17 @@ def handle_sync_requests():
     global IS_NTP_TIME_SET
     global SYNC_ACK_MESSAGE
 
-    with slave_lock:
-        print("IN SLAVE SYNC ACK")
-        while (not(SYNC_SUCCESS) and not(FAILSAFE_EVENT)):
-            message = next(multicast_recieve())
-            if message["type"] == "sync_request" and message["controller_id"]!=CONTROLLER_ID:
-                print("Received sync request from controller: ", message["controller_id"])
-                if IS_NTP_TIME_SET:
-                    multicast_send(SYNC_ACK_MESSAGE)
-                    print("CONTROLLER Sent SYNC ACK")
-                else:
-                    print("NTP TIME NOT SYNCED")
-                    fail_safe_transmitter()
+    print("IN SLAVE SYNC ACK")
+    while (not(FAILSAFE_EVENT)):
+        message = next(multicast_recieve())
+        if message["type"] == "sync_request" and message["controller_id"]!=CONTROLLER_ID:
+            print("Received sync request from controller: ", message["controller_id"])
+            if IS_NTP_TIME_SET:
+                multicast_send(SYNC_ACK_MESSAGE)
+                print("CONTROLLER Sent SYNC ACK")
+            else:
+                print("NTP TIME NOT SYNCED")
+                fail_safe_transmitter()
 
 
 # ------------------- GENERAL START REQUEST ---------------------------
@@ -155,19 +154,15 @@ def start_req_handler():
     global RECIEVED_START_TIME
     global START_ACK_MESSAGE
 
-    while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
-        continue
-    print("HANDLING START.........................")
-    with slave_lock:
-        print("IN SLAVE START ACK")
-        while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
-            received_pkt = next(multicast_recieve())
-            if(received_pkt["type"]=="start_request" and received_pkt["controller_id"]!=CONTROLLER_ID):
-                if received_pkt["timestamp"]!=None:
-                    RECIEVED_START_TIME = time.struct_time(received_pkt["timestamp"])
-                print("received_start_time",RECIEVED_START_TIME)
-                print("Controller start ack message sent")
-                multicast_send(START_ACK_MESSAGE)
+    print("IN SLAVE START ACK")
+    while(not(FAILSAFE_EVENT)):
+        received_pkt = next(multicast_recieve())
+        if(received_pkt["type"]=="start_request" and received_pkt["controller_id"]!=CONTROLLER_ID):
+            if received_pkt["timestamp"]!=None:
+                RECIEVED_START_TIME = time.struct_time(received_pkt["timestamp"])
+            print("received_start_time",RECIEVED_START_TIME)
+            print("Controller start ack message sent")
+            multicast_send(START_ACK_MESSAGE)
 
 
 # ---------- SYNC SUCCESS Variable UPDATE ---------------------
