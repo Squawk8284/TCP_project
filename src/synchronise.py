@@ -49,6 +49,7 @@ def reliable_sync_ack_master():
             if(len(received_sync_acks)==DEVICES-1):
                 print("MASTER SENT SYN ACK MESSAGE")
                 multicast_send(SYNC_ACK_MESSAGE)
+                SYNC_SUCCESS = True
 
 # ------------------- START REQUEST ---------------------------
 def addOffset(ntp_time,time_offset):
@@ -73,7 +74,6 @@ def reliable_start():
     RETRIES = 0
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and not(START_SUCCESS)):
         continue
-
     START_REQ_MESSAGE["timestamp"] = addOffset(time.localtime(),TIME_OFFSET)
     RECIEVED_START_TIME = START_REQ_MESSAGE["timestamp"]
 
@@ -111,13 +111,14 @@ def reliable_start_ack():
                 time.sleep(10)
                 print("Master Ack Message sent")
                 multicast_send(START_ACK_MESSAGE)
+                START_SUCCESS = True
 
 # ###############################################
 #               GENERAL
 # ###############################################
 
 
-# ------------- SYNC ---------------------------------    
+# ------------- GENERAL SYNC ---------------------------------    
 
 def handle_sync_requests():
     global SYNC_SUCCESS
@@ -137,7 +138,7 @@ def handle_sync_requests():
                 fail_safe_transmitter()
 
 
-# ------------------- START REQUEST ---------------------------
+# ------------------- GENERAL START REQUEST ---------------------------
 
 def start_req_handler():
     global FAILSAFE_EVENT
@@ -148,7 +149,7 @@ def start_req_handler():
 
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
         continue
-    print("SYNCED.........................")
+    print("HANDLING START.........................")
     while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
         received_pkt = next(multicast_recieve())
         if(received_pkt["type"]=="start_request"):
@@ -187,6 +188,7 @@ def start_success_update():
     
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and not(START_SUCCESS)):
         continue
+    print("SYNCED.........................")
     while(not(START_SUCCESS) and SYNC_SUCCESS and not(FAILSAFE_EVENT)):
         recieved_pkt = next(multicast_recieve())
         if (recieved_pkt["type"]=="start_ack"):
