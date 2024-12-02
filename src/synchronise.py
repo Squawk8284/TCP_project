@@ -49,6 +49,7 @@ def reliable_sync_ack_master():
             received_pkt = next(multicast_recieve())
             if(received_pkt["type"]=="sync_ack" and received_pkt["controller_id"]!=MASTER_CONTROLLER_ID):
                 received_sync_acks.add(received_pkt["controller_id"])
+                print("MASTER recieved ack from: ", received_pkt["controller_id"])
                 if(len(received_sync_acks)==DEVICES-1):
                     print("MASTER SENT SYN ACK MESSAGE")
                     multicast_send(SYNC_ACK_MESSAGE)
