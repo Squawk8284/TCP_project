@@ -27,6 +27,7 @@ prev_slots_total = [prev_slot,False,False,False]
 prev_queue_top = -1
 
 def read_queue(id,row,file = FILE_PATH):
+    global left, right, centre
     file_name = file
     target_row = row
     queue_sum = 0
@@ -46,10 +47,14 @@ def read_queue(id,row,file = FILE_PATH):
             return queue_sum
 
 def calculate_queue(id,row):
+    global queue
     queue[id-1] += read_queue(id,row)
 
 def update(x):
     global min_slot_flag,current_slot,queue,cons_slots,total_slots,prev_slot,prev_slots_total
+    global CONTROLLER_ID
+    global left, right, centre
+    global current_status, N
 
     min_slot_flag = 0  #Resetting minimum slot criteria flag
     current_slot += 1
@@ -85,6 +90,7 @@ def update(x):
         gpio_set("red")
 
 def max_queue_resolve(max_list,queue_list):
+    global total_slots
     min_time_slots = []
     min_time_slots_indices = []
     print("max_list",max_list)
@@ -99,6 +105,8 @@ def max_queue_resolve(max_list,queue_list):
 
 def decision(queue_list = None):
     global min_slot_flag
+    global N
+    global total_slots, cons_slots, current_slot
     if queue_list is None:
         queue_list = queue
     queue_top = -1
@@ -127,12 +135,15 @@ def decision(queue_list = None):
 def broadcast(CONTROLLER_ID):
     #Transmit the values to the check it
     #cons_slots[id],total_slots[id],left[0],centre
-    [0],right[0],queue[0],current_status[0]
-    DATA_MESSAGE = {"type": "data","controller_id": CONTROLLER_ID,"left":left[CONTROLLER_ID-1],"centre":centre[CONTROLLER_ID-1],"right":centre[CONTROLLER_ID-1],"Total":queue[CONTROLLER_ID],"Consecutive_Slots":cons_slots[CONTROLLER_ID-1],"Total_Slots":total_slots[CONTROLLER_ID-1],"Slot":current_slot,"LED_state":current_status[CONTROLLER_ID-1]}
+    # [0],right[0],queue[0],current_status[0]
+    global left,centre,right,queue,cons_slots,total_slots,current_status,current_slot
+    DATA_MESSAGE = {"type": "data","controller_id": CONTROLLER_ID,"left":left[CONTROLLER_ID-1],"centre":centre[CONTROLLER_ID-1],"right":right[CONTROLLER_ID-1],"Total":queue[CONTROLLER_ID],"Consecutive_Slots":cons_slots[CONTROLLER_ID-1],"Total_Slots":total_slots[CONTROLLER_ID-1],"Slot":current_slot,"LED_state":current_status[CONTROLLER_ID-1]}
     reliable_data_transmit_and_receive_ack(DATA_MESSAGE)
 
 def state_table_update(id):
     global CONTROLLER_DATA
+    global ID
+    global left,centre,right,queue,cons_slots,total_slots,current_status
     for x in ID:
         if(x != id):
             left[id-1] = CONTROLLER_DATA[id-1]['left']
@@ -146,15 +157,28 @@ def state_table_update(id):
             continue
     
 def base_process():
-    global prev_queue_top,READ_QUEUE_FLAG,FAILSAFE_EVENT,DATA_SUCCESS,START_SUCCESS #Check how to use shared flag from failsafe thread
-    while(not(START_SUCCESS) and not(FAILSAFE_EVENT)):
-        pass
+    global prev_queue_top
+    global total_slots
+    global RECIEVED_START_TIME
+    global CONTROLLER_ID
+    global READ_QUEUE_FLAG
+    global FAILSAFE_EVENT
+    global DATA_SUCCESS
+    global queue
+    global START_SUCCESS #Check how to use shared flag from failsafe thread
+    READ_QUEUE_FLAG.clear()
+
+    while(not(START_SUCCESS) and (not FAILSAFE_EVENT)):
+        continue
+    
+    print("DATA STARTED")
+
     row = 0
     #Starting the queue reading, ntp start time is required,
     while(not(FAILSAFE_EVENT) and START_SUCCESS):
-        if(time.localtime()>RECIEVED_START_TIME):
+        if(time.struct_time(time.localtime())>RECIEVED_START_TIME):
             if(not(FAILSAFE_EVENT)):
-                if(READ_QUEUE_FLAG == True):
+                if(READ_QUEUE_FLAG.is_set()):
                     update(prev_queue_top)
                     row += 1
                     queue[CONTROLLER_ID-1] += read_queue(CONTROLLER_ID,row)
@@ -164,7 +188,7 @@ def base_process():
                     if(queue[CONTROLLER_ID-1] > 0):
                         prev_queue_top = decision(queue)
                         broadcast(CONTROLLER_ID)
-                        READ_QUEUE_FLAG.reset()
+                        READ_QUEUE_FLAG.clear()
                     else :
                         continue
                     
@@ -178,8 +202,12 @@ def base_process():
         else:
             continue
 
-def time_update(time_initial):
+def time_update():
     global READ_QUEUE_FLAG
+    global START_SUCCESS
+    global FAILSAFE_EVENT
+    global SLOT_TIME
+
     while(not(START_SUCCESS) and not(FAILSAFE_EVENT)):
         pass
     while(not(FAILSAFE_EVENT) and START_SUCCESS):

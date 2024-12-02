@@ -31,8 +31,12 @@ RECIEVED_START_TIME = None
 IS_NTP_TIME_SET = True
 READ_QUEUE_FLAG = False
 
-lock = threading.Lock()
+master_send_lock = threading.Lock()
+master_rec_lock = threading.Lock()
+slave_lock = threading.Lock()
+general_lock = threading.Lock()
 READ_QUEUE_FLAG = threading.Event()
+
 
 # ---------------------------- FUNCTIONS -------------------
 
