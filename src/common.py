@@ -22,12 +22,12 @@ CONTROLLER_DATA = [None, None, None, None]
 FAILSAFE_EVENT = False
 FAIL_SAFE_ACK_RECEIVED = False
 
-SYNC_SUCCESS = False
-START_SUCCESS = False
+SYNC_SUCCESS = True
+START_SUCCESS = True
 DATA_SUCCESS = False
 
 MASTER_SYNC_SUCCESS = True
-RECIEVED_START_TIME = None
+RECIEVED_START_TIME = time.localtime()
 IS_NTP_TIME_SET = True
 READ_QUEUE_FLAG = False
 
@@ -35,7 +35,7 @@ master_send_lock = threading.Lock()
 master_rec_lock = threading.Lock()
 slave_lock = threading.Lock()
 general_lock = threading.Lock()
-READ_QUEUE_FLAG = threading.Event()
+READ_QUEUE_FLAG = True
 
 
 # ---------------------------- FUNCTIONS -------------------
