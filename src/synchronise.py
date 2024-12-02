@@ -17,7 +17,8 @@ def reliable_sync_request_master():
     global DEFAULT_RTO
 
     RTO = DEFAULT_RTO
-    with master_lock:
+    with master_send_lock:
+        print("IN SYNC REQ MASTER")
         while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
             multicast_send(SYNC_REQ_MESSAGE)
             print("Master Sent SYN REQ message")
@@ -42,7 +43,8 @@ def reliable_sync_ack_master():
     
     received_sync_acks = set()
 
-    with master_lock:
+    with master_rec_lock:
+        print("IN SYNC ACK MASTER")
         while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
             received_pkt = next(multicast_recieve())
             if(received_pkt["type"]=="sync_ack" and received_pkt["controller_id"]!=MASTER_CONTROLLER_ID):
@@ -75,7 +77,8 @@ def reliable_start():
     RETRIES = 0
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and not(START_SUCCESS)):
         continue
-    with master_lock:
+    with master_send_lock:
+        print("IN START REQ MASTER")
         START_REQ_MESSAGE["timestamp"] = addOffset(time.localtime(),TIME_OFFSET)
         RECIEVED_START_TIME = START_REQ_MESSAGE["timestamp"]
 
@@ -103,7 +106,8 @@ def reliable_start_ack():
     
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and not(START_SUCCESS)):
         continue
-    with master_lock:
+    with master_rec_lock:
+        print("IN START ACK MASTER")
         while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
             received_pkt = next(multicast_recieve())
             if(received_pkt["type"]=="start_ack" and received_pkt["controller_id"]!=MASTER_CONTROLLER_ID):
@@ -130,6 +134,7 @@ def handle_sync_requests():
     global SYNC_ACK_MESSAGE
 
     with slave_lock:
+        print("IN SLAVE SYNC ACK")
         while (not(SYNC_SUCCESS) and not(FAILSAFE_EVENT)):
             message = next(multicast_recieve())
             if message["type"] == "sync_request":
@@ -155,6 +160,7 @@ def start_req_handler():
         continue
     print("HANDLING START.........................")
     with slave_lock:
+        print("IN SLAVE START ACK")
         while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
             received_pkt = next(multicast_recieve())
             if(received_pkt["type"]=="start_request"):
@@ -173,6 +179,7 @@ def sync_success_update():
     
     received_sync_acks = set()
     with general_lock:
+        print("IN SYNC UPDATE")
         while(not(SYNC_SUCCESS) and not(FAILSAFE_EVENT)):
             recieved_pkt = next(multicast_recieve())
             if (recieved_pkt["type"]=="sync_ack"):
@@ -195,6 +202,7 @@ def start_success_update():
         continue
     print("SYNCED.........................")
     with general_lock:
+        print("IN START UPDATE")
         while(not(START_SUCCESS) and SYNC_SUCCESS and not(FAILSAFE_EVENT)):
             recieved_pkt = next(multicast_recieve())
             if (recieved_pkt["type"]=="start_ack"):
