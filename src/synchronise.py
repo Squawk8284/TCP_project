@@ -53,7 +53,6 @@ def reliable_sync_ack_master():
                 if(len(received_sync_acks)==DEVICES-1):
                     print("MASTER SENT SYN ACK MESSAGE")
                     multicast_send(SYNC_ACK_MESSAGE)
-                    SYNC_SUCCESS = True
 
 # ------------------- START REQUEST ---------------------------
 def addOffset(ntp_time,time_offset):
@@ -119,7 +118,6 @@ def reliable_start_ack():
                     time.sleep(10)
                     print("Master Ack Message sent")
                     multicast_send(START_ACK_MESSAGE)
-                    START_SUCCESS = True
 
 # ###############################################
 #               GENERAL
