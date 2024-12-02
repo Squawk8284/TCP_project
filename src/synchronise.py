@@ -17,19 +17,19 @@ def reliable_sync_request_master():
     global DEFAULT_RTO
 
     RTO = DEFAULT_RTO
-
-    while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
-        multicast_send(SYNC_REQ_MESSAGE)
-        print("Master Sent SYN REQ message")
-        time.sleep(RTO)
-        print("Waited for RTO")
-        if(RETRIES==MAX_RETRIES):
-            fail_safe_transmitter()
-            RETRIES = 0
-            RTO = DEFAULT_RTO
-        else:
-            RETRIES += 1
-            RTO += 2
+    with master_lock:
+        while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
+            multicast_send(SYNC_REQ_MESSAGE)
+            print("Master Sent SYN REQ message")
+            time.sleep(RTO)
+            print("Waited for RTO")
+            if(RETRIES==MAX_RETRIES):
+                fail_safe_transmitter()
+                RETRIES = 0
+                RTO = DEFAULT_RTO
+            else:
+                RETRIES += 1
+                RTO += 2
 
 
 
@@ -42,14 +42,15 @@ def reliable_sync_ack_master():
     
     received_sync_acks = set()
 
-    while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
-        received_pkt = next(multicast_recieve())
-        if(received_pkt["type"]=="sync_ack" and received_pkt["controller_id"]!=MASTER_CONTROLLER_ID):
-            received_sync_acks.add(received_pkt["controller_id"])
-            if(len(received_sync_acks)==DEVICES-1):
-                print("MASTER SENT SYN ACK MESSAGE")
-                multicast_send(SYNC_ACK_MESSAGE)
-                SYNC_SUCCESS = True
+    with master_lock:
+        while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
+            received_pkt = next(multicast_recieve())
+            if(received_pkt["type"]=="sync_ack" and received_pkt["controller_id"]!=MASTER_CONTROLLER_ID):
+                received_sync_acks.add(received_pkt["controller_id"])
+                if(len(received_sync_acks)==DEVICES-1):
+                    print("MASTER SENT SYN ACK MESSAGE")
+                    multicast_send(SYNC_ACK_MESSAGE)
+                    SYNC_SUCCESS = True
 
 # ------------------- START REQUEST ---------------------------
 def addOffset(ntp_time,time_offset):
@@ -74,20 +75,21 @@ def reliable_start():
     RETRIES = 0
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and not(START_SUCCESS)):
         continue
-    START_REQ_MESSAGE["timestamp"] = addOffset(time.localtime(),TIME_OFFSET)
-    RECIEVED_START_TIME = START_REQ_MESSAGE["timestamp"]
+    with master_lock:
+        START_REQ_MESSAGE["timestamp"] = addOffset(time.localtime(),TIME_OFFSET)
+        RECIEVED_START_TIME = START_REQ_MESSAGE["timestamp"]
 
-    while(not(FAILSAFE_EVENT) and not(START_SUCCESS)):
-        multicast_send(START_REQ_MESSAGE)
-        print("MASTER Sent start REQ MESSSAGE")
-        time.sleep(RTO)
-        if(RETRIES==MAX_RETRIES):
-            fail_safe_transmitter()
-            RETRIES = 0
-            RTO = DEFAULT_RTO
-        else:
-            RETRIES += 1
-            RTO +=2
+        while(not(FAILSAFE_EVENT) and not(START_SUCCESS)):
+            multicast_send(START_REQ_MESSAGE)
+            print("MASTER Sent start REQ MESSSAGE")
+            time.sleep(RTO)
+            if(RETRIES==MAX_RETRIES):
+                fail_safe_transmitter()
+                RETRIES = 0
+                RTO = DEFAULT_RTO
+            else:
+                RETRIES += 1
+                RTO +=2
 
 
 def reliable_start_ack():
@@ -101,17 +103,18 @@ def reliable_start_ack():
     
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and not(START_SUCCESS)):
         continue
-    while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
-        received_pkt = next(multicast_recieve())
-        if(received_pkt["type"]=="start_ack" and received_pkt["controller_id"]!=MASTER_CONTROLLER_ID):
-            received_start_acks.add(received_pkt["controller_id"])
-            print("ACk recieved from: ", received_pkt["controller_id"])
-            print(received_pkt["controller_id"])
-            if(len(received_start_acks)==DEVICES-1):
-                time.sleep(10)
-                print("Master Ack Message sent")
-                multicast_send(START_ACK_MESSAGE)
-                START_SUCCESS = True
+    with master_lock:
+        while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
+            received_pkt = next(multicast_recieve())
+            if(received_pkt["type"]=="start_ack" and received_pkt["controller_id"]!=MASTER_CONTROLLER_ID):
+                received_start_acks.add(received_pkt["controller_id"])
+                print("ACk recieved from: ", received_pkt["controller_id"])
+                print(received_pkt["controller_id"])
+                if(len(received_start_acks)==DEVICES-1):
+                    time.sleep(10)
+                    print("Master Ack Message sent")
+                    multicast_send(START_ACK_MESSAGE)
+                    START_SUCCESS = True
 
 # ###############################################
 #               GENERAL
@@ -126,16 +129,17 @@ def handle_sync_requests():
     global IS_NTP_TIME_SET
     global SYNC_ACK_MESSAGE
 
-    while (not(SYNC_SUCCESS) and not(FAILSAFE_EVENT)):
-        message = next(multicast_recieve())
-        if message["type"] == "sync_request":
-            print("Received sync request from controller: ", message["controller_id"])
-            if IS_NTP_TIME_SET:
-                multicast_send(SYNC_ACK_MESSAGE)
-                print("CONTROLLER Sent SYNC ACK")
-            else:
-                print("NTP TIME NOT SYNCED")
-                fail_safe_transmitter()
+    with slave_lock:
+        while (not(SYNC_SUCCESS) and not(FAILSAFE_EVENT)):
+            message = next(multicast_recieve())
+            if message["type"] == "sync_request":
+                print("Received sync request from controller: ", message["controller_id"])
+                if IS_NTP_TIME_SET:
+                    multicast_send(SYNC_ACK_MESSAGE)
+                    print("CONTROLLER Sent SYNC ACK")
+                else:
+                    print("NTP TIME NOT SYNCED")
+                    fail_safe_transmitter()
 
 
 # ------------------- GENERAL START REQUEST ---------------------------
@@ -150,13 +154,14 @@ def start_req_handler():
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
         continue
     print("HANDLING START.........................")
-    while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
-        received_pkt = next(multicast_recieve())
-        if(received_pkt["type"]=="start_request"):
-            RECIEVED_START_TIME = time.struct_time(received_pkt["timestamp"])
-            print("received_start_time",RECIEVED_START_TIME)
-            print("Controller start message sent")
-            multicast_send(START_ACK_MESSAGE)
+    with slave_lock:
+        while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
+            received_pkt = next(multicast_recieve())
+            if(received_pkt["type"]=="start_request"):
+                RECIEVED_START_TIME = time.struct_time(received_pkt["timestamp"])
+                print("received_start_time",RECIEVED_START_TIME)
+                print("Controller start ack message sent")
+                multicast_send(START_ACK_MESSAGE)
 
 
 # ---------- SYNC SUCCESS Variable UPDATE ---------------------
@@ -167,15 +172,15 @@ def sync_success_update():
     global DEVICES
     
     received_sync_acks = set()
-
-    while(not(SYNC_SUCCESS) and not(FAILSAFE_EVENT)):
-        recieved_pkt = next(multicast_recieve())
-        if (recieved_pkt["type"]=="sync_ack"):
-            received_sync_acks.add(recieved_pkt["controller_id"])
-            if( len(received_sync_acks)==DEVICES):
-                print("RECIEVED SYNC ACK FROM CONTROLLER: ", recieved_pkt["controller_id"])
-                SYNC_SUCCESS = True
-                print("SYNC_SUCCESS_UPDATED")
+    with general_lock:
+        while(not(SYNC_SUCCESS) and not(FAILSAFE_EVENT)):
+            recieved_pkt = next(multicast_recieve())
+            if (recieved_pkt["type"]=="sync_ack"):
+                received_sync_acks.add(recieved_pkt["controller_id"])
+                if( len(received_sync_acks)==DEVICES):
+                    print("RECIEVED SYNC ACK FROM CONTROLLER: ", recieved_pkt["controller_id"])
+                    SYNC_SUCCESS = True
+                    print("SYNC_SUCCESS_UPDATED")
 
 
 def start_success_update():
@@ -189,14 +194,15 @@ def start_success_update():
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and not(START_SUCCESS)):
         continue
     print("SYNCED.........................")
-    while(not(START_SUCCESS) and SYNC_SUCCESS and not(FAILSAFE_EVENT)):
-        recieved_pkt = next(multicast_recieve())
-        if (recieved_pkt["type"]=="start_ack"):
-            received_start_acks.add(recieved_pkt["controller_id"])
-            if(len(received_start_acks)==DEVICES):
-                print("RECIEVED START ACK FROM CONTROLLER: ", recieved_pkt["controller_id"])
-                START_SUCCESS = True
-                print("START_SUCCESS_UPDATED")
+    with general_lock:
+        while(not(START_SUCCESS) and SYNC_SUCCESS and not(FAILSAFE_EVENT)):
+            recieved_pkt = next(multicast_recieve())
+            if (recieved_pkt["type"]=="start_ack"):
+                received_start_acks.add(recieved_pkt["controller_id"])
+                if(len(received_start_acks)==DEVICES):
+                    print("RECIEVED START ACK FROM CONTROLLER: ", recieved_pkt["controller_id"])
+                    START_SUCCESS = True
+                    print("START_SUCCESS_UPDATED")
 
 # -------------- FAILSAFE ------------------ 
 
