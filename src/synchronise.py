@@ -107,15 +107,14 @@ def reliable_start_ack():
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and not(START_SUCCESS)):
         continue
     with master_rec_lock:
-        print("IN START ACK MASTER")
+        print("IN MASTER START ACK MASTER")
         while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
             received_pkt = next(multicast_recieve())
             if(received_pkt["type"]=="start_ack" and received_pkt["controller_id"]!=MASTER_CONTROLLER_ID and (received_pkt["controller_id"] not in received_start_acks)):
                 received_start_acks.add(received_pkt["controller_id"])
-                print("ACk recieved from: ", received_pkt["controller_id"])
+                print("Start ACk recieved from: ", received_pkt["controller_id"])
                 print(received_pkt["controller_id"])
                 if(len(received_start_acks)==DEVICES-1):
-                    time.sleep(10)
                     print("Master Ack Message sent")
                     multicast_send(START_ACK_MESSAGE)
 
@@ -199,7 +198,6 @@ def start_success_update():
     
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and not(START_SUCCESS)):
         continue
-    print("SYNCED.........................")
     with general_lock:
         print("IN START UPDATE")
         while(not(START_SUCCESS) and SYNC_SUCCESS and not(FAILSAFE_EVENT)):
