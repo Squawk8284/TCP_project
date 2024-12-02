@@ -137,7 +137,7 @@ def broadcast(CONTROLLER_ID):
     #cons_slots[id],total_slots[id],left[0],centre
     # [0],right[0],queue[0],current_status[0]
     global left,centre,right,queue,cons_slots,total_slots,current_status,current_slot
-    DATA_MESSAGE = {"type": "data","controller_id": CONTROLLER_ID,"left":left[CONTROLLER_ID-1],"centre":centre[CONTROLLER_ID-1],"right":right[CONTROLLER_ID-1],"Total":queue[CONTROLLER_ID],"Consecutive_Slots":cons_slots[CONTROLLER_ID-1],"Total_Slots":total_slots[CONTROLLER_ID-1],"Slot":current_slot,"LED_state":current_status[CONTROLLER_ID-1]}
+    DATA_MESSAGE = {"type": "data","controller_id": CONTROLLER_ID,"left":left[CONTROLLER_ID-1],"centre":centre[CONTROLLER_ID-1],"right":right[CONTROLLER_ID-1],"Total":queue[CONTROLLER_ID-1],"Consecutive_Slots":cons_slots[CONTROLLER_ID-1],"Total_Slots":total_slots[CONTROLLER_ID-1],"Slot":current_slot,"LED_state":current_status[CONTROLLER_ID-1]}
     reliable_data_transmit_and_receive_ack(DATA_MESSAGE)
 
 def state_table_update(id):
