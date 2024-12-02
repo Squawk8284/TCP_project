@@ -58,7 +58,7 @@ def update(x):
 
     min_slot_flag = 0  #Resetting minimum slot criteria flag
     current_slot += 1
-    if(current_slot == N+1):
+    if(current_slot == N+1 or prev_queue_top == -1):
         current_slot = 0
         cons_slots = [0,0,0,0]
         total_slots = [0,0,0,0]
