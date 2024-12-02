@@ -177,7 +177,7 @@ def sync_success_update():
 
 
 def start_success_update():
-    global SYNC_SUCCESS
+    # global SYNC_SUCCESS
     global START_SUCCESS
     global FAILSAFE_EVENT
     global DEVICES
