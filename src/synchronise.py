@@ -113,23 +113,29 @@ def start_req_handler():
 def sync_success_update():
     global SYNC_SUCCESS
     global FAILSAFE_EVENT
+    received_acks = set()
 
     while(not(SYNC_SUCCESS) and not(FAILSAFE_EVENT)):
         recieved_pkt = next(multicast_recieve())
-        if (recieved_pkt["type"]=="sync_ack" and recieved_pkt["controller_id"]==MASTER_CONTROLLER_ID):
-            SYNC_SUCCESS = True
-            print("SYNC_SUCCESS_UPDATED")
+        if (recieved_pkt["type"]=="sync_ack"):
+            received_acks.add(recieved_pkt["controller_id"])
+            if(len(recieved_pkt)==DEVICES):
+                SYNC_SUCCESS = True
+                print("SYNC_SUCCESS_UPDATED")
 
 
 def start_success_update():
     global START_SUCCESS
     global FAILSAFE_EVENT
+    received_acks = set()
     
     while(not(START_SUCCESS) and not(FAILSAFE_EVENT)):
         recieved_pkt = next(multicast_recieve())
-        if (recieved_pkt["type"]=="start_ack" and recieved_pkt["controller_id"]==MASTER_CONTROLLER_ID):
-            START_SUCCESS = True
-            print("START_SUCCESS_UPDATED")
+        received_acks.add(recieved_pkt["controller_id"])
+        if (recieved_pkt["type"]=="start_ack"):
+            if(len(recieved_pkt)==DEVICES):
+                START_SUCCESS = True
+                print("START_SUCCESS_UPDATED")
 
 # -------------- FAILSAFE ------------------ 
 
