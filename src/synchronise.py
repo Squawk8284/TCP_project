@@ -6,8 +6,8 @@ def reliable_sync_request_master():
     global RETRIES
     global FAILSAFE_EVENT
     global SYNC_SUCCESS
-    global MASTER_SYNC_SUCCESS
-    while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and MASTER_SYNC_SUCCESS):
+    #global MASTER_SYNC_SUCCESS
+    while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)): #removed MASTER_SYNC_SUCCESS
         multicast_send(SYNC_REQ_MESSAGE)
         print("Sent message")
         time.sleep(RTO)
@@ -25,7 +25,7 @@ def reliable_sync_ack_master():
     received_acks = set()
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
         received_pkt = next(multicast_recieve())
-        if(received_pkt["type"]=="sync_ack"):
+        if(received_pkt["type"]=="sync_ack" and received_pkt["controller_id"]!=MASTER_CONTROLLER_ID): # Added condition to ignore master controller ID
             received_acks.add(received_pkt["controller_id"])
             if(len(received_acks)==DEVICES-1):
                 SYNC_SUCCESS = True
@@ -86,7 +86,7 @@ def reliable_start_ack():
         continue
     while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
         received_pkt = next(multicast_recieve())
-        if(received_pkt["type"]=="start_ack"):
+        if(received_pkt["type"]=="start_ack" and received_pkt["controller_id"]!=MASTER_CONTROLLER_ID): # Added condition to ignore master controller ID
             received_acks.add(received_pkt["controller_id"])
             print("ACk recieved from: ", received_acks["controller_id"])
             print(received_pkt["controller_id"])

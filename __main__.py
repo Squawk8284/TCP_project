@@ -13,16 +13,6 @@ def main():
 
 
     # ---------- COMMENT IF NOT MASTER---------------------------
-<<<<<<< HEAD
-    #sync_req_master_thread = threading.Thread(target=reliable_sync_request_master)
-    #sync_ack_master_thread = threading.Thread(target=reliable_sync_ack_master)
-    #start_req_master_thread = threading.Thread(target=reliable_start)
-    #start_ack_master_thread = threading.Thread(target=reliable_start_ack)
-    #sync_req_master_thread.start()
-    #sync_ack_master_thread.start()
-    #start_req_master_thread.start()
-    #start_ack_master_thread.start()
-=======
     # sync_req_master_thread = threading.Thread(target=reliable_sync_request_master)
     # sync_ack_master_thread = threading.Thread(target=reliable_sync_ack_master)
     # start_req_master_thread = threading.Thread(target=reliable_start)
@@ -31,7 +21,6 @@ def main():
     # sync_ack_master_thread.start()
     # start_req_master_thread.start()
     # start_ack_master_thread.start()
->>>>>>> da2b0c9f039b871851e66aa37fd6218a3857d941
     # ---------------------------------------------------------------------------
 
 
