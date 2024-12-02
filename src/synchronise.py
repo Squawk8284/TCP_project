@@ -247,7 +247,7 @@ def reliable_data_receiver():
                 CONTROLLER_DATA[ID-1] = parsed_data
                 print(CONTROLLER_DATA[ID-1])
                 multicast_send(DATA_ACK_MESSAGE)
-                print("Sent DATA ACK for controller", ID)
+                #print("Sent DATA ACK for controller", ID)
 
         DATA_SUCCESS = True
 
