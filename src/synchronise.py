@@ -158,7 +158,7 @@ def start_req_handler():
     while(not(FAILSAFE_EVENT)):
         received_pkt = next(multicast_recieve())
         if(received_pkt["type"]=="start_request" and received_pkt["controller_id"]!=CONTROLLER_ID):
-            if received_pkt["timestamp"]!=None:
+            if received_pkt["timestamp"] is not None:
                 RECIEVED_START_TIME = time.struct_time(received_pkt["timestamp"])
             print("received_start_time",RECIEVED_START_TIME)
             print("Controller start ack message sent")

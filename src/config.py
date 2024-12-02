@@ -10,10 +10,10 @@ FILE_PATH = f'src/queue1.txt'
 
 TIME_OFFSET = 0
 SLOT_TIME = 10
-RTO = 10
+RTO = 5
 DEFAULT_RTO = 10
 RETRIES = 0
-MAX_RETRIES = 20
+MAX_RETRIES = 7
 
 SYNC_REQ_MESSAGE = {"type": "sync_request", "controller_id": MASTER_CONTROLLER_ID}
 SYNC_ACK_MESSAGE = {"type": "sync_ack", "controller_id": CONTROLLER_ID}
