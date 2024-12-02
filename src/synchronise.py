@@ -148,6 +148,7 @@ def start_req_handler():
 
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
         continue
+    print("SYNCED.........................")
     while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
         received_pkt = next(multicast_recieve())
         if(received_pkt["type"]=="start_request"):
