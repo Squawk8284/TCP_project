@@ -4,8 +4,12 @@ from common import *
 # ------------- SYNC ---------------------------------
 def reliable_sync_request_master():
     global RETRIES
+    global MAX_RETRIES
     global FAILSAFE_EVENT
     global SYNC_SUCCESS
+    global SYNC_REQ_MESSAGE
+    global RTO
+
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
         multicast_send(SYNC_REQ_MESSAGE)
         print("Master Sent SYN REQ message")
@@ -21,10 +25,14 @@ def reliable_sync_request_master():
 def reliable_sync_ack_master():
     global FAILSAFE_EVENT
     global SYNC_SUCCESS
+    global CONTROLLER_ID
+    global DEVICES
+    global SYNC_ACK_MESSAGE
+
     received_acks = set()
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
         received_pkt = next(multicast_recieve())
-        if(received_pkt["type"]=="sync_ack"):
+        if(received_pkt["type"]=="sync_ack" and received_pkt["controller_id"]!=CONTROLLER_ID):
             received_acks.add(received_pkt["controller_id"])
             if(len(received_acks)==DEVICES-1):
                 print("MASTER SENT SYN SCK MESSAGE")
@@ -35,6 +43,8 @@ def handle_sync_requests():
     global SYNC_SUCCESS
     global FAILSAFE_EVENT
     global IS_NTP_TIME_SET
+    global SYNC_ACK_MESSAGE
+
     while (not(SYNC_SUCCESS) and not(FAILSAFE_EVENT)):
         message = next(multicast_recieve())
         if message["type"] == "sync_request":
@@ -57,8 +67,12 @@ def reliable_start():
     global FAILSAFE_EVENT
     global SYNC_SUCCESS
     global RETRIES
+    global MAX_RETRIES
     global START_SUCCESS
     global RECIEVED_START_TIME
+    global START_REQ_MESSAGE
+    global RTO
+
     RETRIES = 0
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and not(START_SUCCESS)):
         continue
@@ -79,13 +93,15 @@ def reliable_start_ack():
     global FAILSAFE_EVENT
     global SYNC_SUCCESS
     global START_SUCCESS
-    global RETRIES
+    global CONTROLLER_ID
+    global START_ACK_MESSAGE
+
     received_acks = set()
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS) and not(START_SUCCESS)):
         continue
     while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
         received_pkt = next(multicast_recieve())
-        if(received_pkt["type"]=="start_ack"):
+        if(received_pkt["type"]=="start_ack" and received_pkt["controller_id"]!=CONTROLLER_ID):
             received_acks.add(received_pkt["controller_id"])
             print("ACk recieved from: ", received_pkt["controller_id"])
             print(received_pkt["controller_id"])
@@ -99,6 +115,8 @@ def start_req_handler():
     global SYNC_SUCCESS
     global START_SUCCESS
     global RECIEVED_START_TIME
+    global START_ACK_MESSAGE
+
     while(not(FAILSAFE_EVENT) and not(SYNC_SUCCESS)):
         continue
     while(not(FAILSAFE_EVENT) and SYNC_SUCCESS and not(START_SUCCESS)):
@@ -115,6 +133,7 @@ def start_req_handler():
 def sync_success_update():
     global SYNC_SUCCESS
     global FAILSAFE_EVENT
+
     received_acks = set()
 
     while(not(SYNC_SUCCESS) and not(FAILSAFE_EVENT)):
@@ -122,7 +141,7 @@ def sync_success_update():
         if (recieved_pkt["type"]=="sync_ack"):
             received_acks.add(recieved_pkt["controller_id"])
             print("RECIEVED SYNC ACK FROM CONTROLLER: ", recieved_pkt["controller_id"])
-            if(len(recieved_pkt)==DEVICES-1):
+            if(len(recieved_pkt)==DEVICES):
                 SYNC_SUCCESS = True
                 print("SYNC_SUCCESS_UPDATED")
 
@@ -130,6 +149,7 @@ def sync_success_update():
 def start_success_update():
     global START_SUCCESS
     global FAILSAFE_EVENT
+
     received_acks = set()
     
     while(not(START_SUCCESS) and not(FAILSAFE_EVENT)):
