@@ -178,7 +178,7 @@ def base_process():
         else:
             continue
 
-def time_update(time_initial):
+def time_update():
     global READ_QUEUE_FLAG
     while(not(START_SUCCESS) and not(FAILSAFE_EVENT)):
         pass
