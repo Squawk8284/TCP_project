@@ -1,5 +1,7 @@
 
 MASTER_CONTROLLER_ID = 1
+CONTROLLER_ID = 1
+DEVICES = 4
 CONTROLLER_ID = 2
 DEVICES = 2
 
@@ -8,11 +10,11 @@ PORT = 5007
 
 FILE_PATH = f'src/queue1.txt'
 
-TIME_OFFSET = 60
+TIME_OFFSET = 0
 SLOT_TIME = 10
-RTO = 30
+RTO = 10
 RETRIES = 0
-MAX_RETRIES = 7
+MAX_RETRIES = 20
 
 SYNC_REQ_MESSAGE = {"type": "sync_request", "controller_id": MASTER_CONTROLLER_ID}
 SYNC_ACK_MESSAGE = {"type": "sync_ack", "controller_id": CONTROLLER_ID}
