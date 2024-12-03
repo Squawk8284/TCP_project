@@ -6,14 +6,14 @@ import json
 import socket
 import threading
 from threading import Event
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
  
-# GPIO Pin Definitions
-# RED_LED = 18
-# GREEN_LED = 19
-# YELLOW_LED = 20
+#GPIO Pin Definitions
+RED_LED = int(17)
+GREEN_LED = int(27)
+YELLOW_LED = int(22)
  
-# LED_pin_dict = {"red":RED_LED,"yellow":YELLOW_LED,"green":GREEN_LED}
+LED_pin_dict = {"red":RED_LED,"yellow":YELLOW_LED,"green":GREEN_LED}
 
 
 # -------------------------- Variables ----------------
@@ -57,18 +57,17 @@ def ntp_time_sync_master():
         return time.time()
 
 def gpio_setup():
-    # # GPIO Setup
-    # GPIO.setmode(GPIO.BCM)
-    # GPIO.setup(RED_LED, GPIO.OUT)
-    # GPIO.setup(GREEN_LED, GPIO.OUT)
-    # GPIO.setup(YELLOW_LED, GPIO.OUT)
-    pass
+    # GPIO Setup
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(RED_LED, GPIO.OUT)
+    GPIO.setup(GREEN_LED, GPIO.OUT)
+    GPIO.setup(YELLOW_LED, GPIO.OUT)
+    # for pin in LED_pin_dict.values():
+    #     GPIO.output(pin, GPIO.LOW)
+    # pass
 def gpio_set(LED_state):
-    # for pin in LED_pin_dict.keys():
-    #     if(pin==LED_state):
-    #         GPIO.setup(LED_pin_dict[LED_state],HIGH)
-    #     else:
-    #         GPIO.setup(LED_pin_dict[LED_state],LOW)
+    # Turn on the selected LED
+    GPIO.output(LED_pin_dict[LED_state], GPIO.HIGH)
     print("GPIO SET TO ", LED_state)
 
 # -------------------- MULTICAST FUNCTIONS -------------------
