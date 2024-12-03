@@ -234,7 +234,7 @@ def reliable_data_receiver():
     while(not(FAILSAFE_EVENT)):
         # while(None in CONTROLLER_DATA):
         received_pkt = next(multicast_recieve())
-        if(received_pkt["type"]=="data" and received_pkt["controller_id"]!=CONTROLLER_ID):
+        if(received_pkt["type"]=="data"):
             multicast_send(DATA_ACK_MESSAGE)
             parsed_data = {
                 "controller_id": received_pkt.get("controller_id"),
