@@ -230,12 +230,10 @@ def reliable_data_receiver():
     global CONTROLLER_DATA
     global DATA_SUCCESS
 
-    while(not(FAILSAFE_EVENT) and START_SUCCESS):
-        received_acks = set()
+    while(not(FAILSAFE_EVENT)):
         while(None in CONTROLLER_DATA):
             received_pkt = next(multicast_recieve())
-            if(received_pkt["type"]=="data" and (received_pkt["controller_id"] not in received_acks)):
-                received_acks.add(received_pkt["controller_id"])
+            if(received_pkt["type"]=="data"):
                 parsed_data = {
                     "left": received_pkt.get("left"),
                     "centre": received_pkt.get("centre"),
@@ -263,22 +261,20 @@ def reliable_data_transmit_and_receive_ack(DATA_MESSAGE):
     RETRIES = 0
     received_acks = set()
     #global sync_success
-    while (START_SUCCESS and not(FAILSAFE_EVENT)):
+    while (not(FAILSAFE_EVENT)):
        
         multicast_send(DATA_MESSAGE)
         print("Sent DATA MESSAGE")
            
-        while len(received_acks) < DEVICES:
+        while len(received_acks) <= DEVICES:
            
             received_pkt = next(multicast_recieve())
-            time.sleep(RTO)
            
             if(received_pkt["type"]=="data_ack" and (received_pkt["controller_id"] not in received_acks)):
                 print(received_pkt)
                 received_acks.add(received_pkt["controller_id"])
  
                 if len(received_acks) == DEVICES:
-                    received_acks = set()
                     RETRIES = 0
                     DATA_SUCCESS = True
                     break
@@ -286,11 +282,11 @@ def reliable_data_transmit_and_receive_ack(DATA_MESSAGE):
             if (RETRIES > MAX_RETRIES):
                 FAILSAFE_EVENT = True
                 print("Failsafe Triggered")
+                fail_safe_transmitter()
                 break
            
             else:
                 multicast_send(DATA_MESSAGE)
                 RETRIES += 1
-                received_acks.clear()
  
  
