@@ -211,9 +211,13 @@ def time_update():
 
     while(not(START_SUCCESS) and not(FAILSAFE_EVENT)):
         pass
-    while(not(FAILSAFE_EVENT) and START_SUCCESS):
-        if(time.localtime()>RECIEVED_START_TIME):
-            time.sleep(SLOT_TIME)
-            #Measure and track 60 second elapse
-            if(not(READ_QUEUE_FLAG)):
-                READ_QUEUE_FLAG = True
+    while(START_SUCCESS):
+        if(not FAILSAFE_EVENT):
+            if(time.localtime()>RECIEVED_START_TIME):
+                time.sleep(SLOT_TIME)
+                #Measure and track 60 second elapse
+                if(not(READ_QUEUE_FLAG)):
+                    READ_QUEUE_FLAG = True
+        
+        else:
+            fail_safe_transmitter()
