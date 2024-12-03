@@ -9,8 +9,8 @@ def main():
     print("PROGRAM STARTED ........\n")
 
     gpio_setup()
-    SYNC_SUCCESS.set()
-    START_SUCCESS.set()
+    # SYNC_SUCCESS.set()
+    # START_SUCCESS.set()
 
 
     # if(CONTROLLER_ID==MASTER_CONTROLLER_ID):
@@ -53,6 +53,7 @@ if __name__ == "__main__":
         main()
     
     except Exception as e:
+        fail_safe_transmitter()
         print("Exception occured:", e)
     
     except KeyboardInterrupt:
