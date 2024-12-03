@@ -30,7 +30,7 @@ DATA_SUCCESS = Event()
 MASTER_SYNC_SUCCESS = True
 RECIEVED_START_TIME = time.localtime()
 IS_NTP_TIME_SET = True
-READ_QUEUE_FLAG = True
+READ_QUEUE_FLAG = Event()
 
 master_send_lock = threading.Lock()
 master_rec_lock = threading.Lock()
