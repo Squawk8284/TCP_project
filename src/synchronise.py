@@ -235,6 +235,7 @@ def reliable_data_receiver():
             received_pkt = next(multicast_recieve())
             if(received_pkt["type"]=="data"):
                 parsed_data = {
+                    "controller_id": received_pkt.get("controller_id"),
                     "left": received_pkt.get("left"),
                     "centre": received_pkt.get("centre"),
                     "right": received_pkt.get("right"),
