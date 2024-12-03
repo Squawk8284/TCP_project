@@ -218,6 +218,7 @@ def fail_safe_receiver():
             FAILSAFE_EVENT = True
             multicast_send(FAILSAFE_ACK_MESSAGE)
             gpio_set("yellow")
+            exit(0)
 
 
 # --------------- DATA --------------------
@@ -231,24 +232,25 @@ def reliable_data_receiver():
     global DATA_SUCCESS
 
     while(not(FAILSAFE_EVENT)):
-        while(None in CONTROLLER_DATA):
-            received_pkt = next(multicast_recieve())
-            if(received_pkt["type"]=="data"):
-                parsed_data = {
-                    "controller_id": received_pkt.get("controller_id"),
-                    "left": received_pkt.get("left"),
-                    "centre": received_pkt.get("centre"),
-                    "right": received_pkt.get("right"),
-                    "Total": received_pkt.get("Total"),
-                    "Consecutive_Slots": received_pkt.get("Consecutive_Slots"),
-                    "Total_Slots": received_pkt.get("Total_Slots"),
-                    "Slot": received_pkt.get("Slot"),
-                    "Status": received_pkt.get("LED_state"),}
-                ID = received_pkt["controller_id"]
-                CONTROLLER_DATA[ID-1] = parsed_data
-                # print(CONTROLLER_DATA[ID-1])
-                multicast_send(DATA_ACK_MESSAGE)
-                #print("Sent DATA ACK for controller", ID)
+        # while(None in CONTROLLER_DATA):
+        received_pkt = next(multicast_recieve())
+        if(received_pkt["type"]=="data"):
+            multicast_send(DATA_ACK_MESSAGE)
+            parsed_data = {
+                "controller_id": received_pkt.get("controller_id"),
+                "left": received_pkt.get("left"),
+                "centre": received_pkt.get("centre"),
+                "right": received_pkt.get("right"),
+                "Total": received_pkt.get("Total"),
+                "Consecutive_Slots": received_pkt.get("Consecutive_Slots"),
+                "Total_Slots": received_pkt.get("Total_Slots"),
+                "Slot": received_pkt.get("Slot"),
+                "Status": received_pkt.get("LED_state")
+                }
+            ID = received_pkt["controller_id"]
+            CONTROLLER_DATA[ID-1] = parsed_data
+            # print(CONTROLLER_DATA[ID-1])
+            print("Sent DATA ACK for controller", ID)
 
 
 
@@ -284,12 +286,12 @@ def reliable_data_transmit_and_receive_ack(DATA_MESSAGE):
            
             if (RETRIES > MAX_RETRIES):
                 FAILSAFE_EVENT = True
-                print("Failsafe Triggered")
                 fail_safe_transmitter()
                 break
            
             else:
                 multicast_send(DATA_MESSAGE)
                 RETRIES += 1
+                RTO += 2
  
  
