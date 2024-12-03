@@ -191,14 +191,14 @@ def base_process():
     global START_SUCCESS #Check how to use shared flag from failsafe thread
     READ_QUEUE_FLAG = True
  
-    while(not(START_SUCCESS) and (not FAILSAFE_EVENT)):
+    while(not(START_SUCCESS.is_set()) and (not FAILSAFE_EVENT)):
         continue
    
     print("DATA STARTED")
  
     row = 0
     #Starting the queue reading, ntp start time is required,
-    while(START_SUCCESS):
+    while(START_SUCCESS.is_set()):
         if(time.struct_time(time.localtime())>RECIEVED_START_TIME):
             if(not(FAILSAFE_EVENT)):
                 if(READ_QUEUE_FLAG):
@@ -232,9 +232,9 @@ def time_update():
     global FAILSAFE_EVENT
     global SLOT_TIME
 
-    while(not(START_SUCCESS) and not(FAILSAFE_EVENT)):
+    while(not(START_SUCCESS.is_set()) and not(FAILSAFE_EVENT)):
         pass
-    while(START_SUCCESS):
+    while(START_SUCCESS.is_set()):
         if(not FAILSAFE_EVENT):
             if(time.localtime()>RECIEVED_START_TIME):
                 time.sleep(SLOT_TIME)
