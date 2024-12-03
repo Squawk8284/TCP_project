@@ -13,7 +13,7 @@ SLOT_TIME = 10
 RTO = 10
 DEFAULT_RTO = 10
 RETRIES = 0
-MAX_RETRIES = 12
+MAX_RETRIES = 5
 
 SYNC_REQ_MESSAGE = {"type": "sync_request", "controller_id": MASTER_CONTROLLER_ID}
 SYNC_ACK_MESSAGE = {"type": "sync_ack", "controller_id": CONTROLLER_ID}
