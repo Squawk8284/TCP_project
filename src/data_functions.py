@@ -176,7 +176,7 @@ def base_process():
 
     row = 0
     #Starting the queue reading, ntp start time is required,
-    while(not(FAILSAFE_EVENT) and START_SUCCESS):
+    while(START_SUCCESS):
         if(time.struct_time(time.localtime())>RECIEVED_START_TIME):
             if(not(FAILSAFE_EVENT)):
                 if(READ_QUEUE_FLAG):
@@ -199,7 +199,7 @@ def base_process():
                     FAILSAFE_EVENT = True
                     fail_safe_transmitter()                    
             else:
-                continue
+                fail_safe_transmitter()
         else:
             continue
 
