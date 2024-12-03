@@ -258,6 +258,7 @@ def reliable_data_transmit_and_receive_ack(DATA_MESSAGE):
     global START_SUCCESS
     global DEVICES
     global DATA_SUCCESS
+    global CONTROLLER_ID
 
     RETRIES = 0
     received_acks = set()
@@ -272,7 +273,7 @@ def reliable_data_transmit_and_receive_ack(DATA_MESSAGE):
             received_pkt = next(multicast_recieve())
             time.sleep(RTO)
            
-            if(received_pkt["type"]=="data_ack"):
+            if(received_pkt["type"]=="data_ack" and received_pkt["controller_id"]!=CONTROLLER_ID):
                 print(received_pkt)
                 received_acks.add(received_pkt["controller_id"])
  
