@@ -190,7 +190,7 @@ def base_process():
     global DATA_SUCCESS
     global queue
     global START_SUCCESS #Check how to use shared flag from failsafe thread
-    READ_QUEUE_FLAG = True
+    READ_QUEUE_FLAG.set()
  
     while(not(START_SUCCESS.is_set()) and (not FAILSAFE_EVENT)):
         continue
@@ -202,11 +202,11 @@ def base_process():
     while(START_SUCCESS.is_set()):
         if(time.struct_time(time.localtime())>RECIEVED_START_TIME):
             if(not(FAILSAFE_EVENT)):
-                if(READ_QUEUE_FLAG):
+                if(READ_QUEUE_FLAG.is_set()):
                     update(prev_queue_top)
                     row += 1
                     queue[CONTROLLER_ID-1] += read_queue(CONTROLLER_ID,row)
-                    READ_QUEUE_FLAG = False
+                    READ_QUEUE_FLAG.clear()
                     if(queue[CONTROLLER_ID-1]>0):
                         broadcast(CONTROLLER_ID)
                     DATA_SUCCESS.wait()
@@ -240,8 +240,8 @@ def time_update():
             if(time.localtime()>RECIEVED_START_TIME):
                 time.sleep(SLOT_TIME)
                 #Measure and track 60 second elapse
-                if(not(READ_QUEUE_FLAG)):
-                    READ_QUEUE_FLAG = True
+                if(not(READ_QUEUE_FLAG.is_set())):
+                    READ_QUEUE_FLAG.clear()
         
         else:
             fail_safe_transmitter()
