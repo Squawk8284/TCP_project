@@ -167,13 +167,14 @@ def state_table_update(id):
     if(not(FAILSAFE_EVENT)):
         for x in ID:
             if(x != id):
-                left[id-1] = CONTROLLER_DATA[id-1]['left']
-                centre[id-1] = CONTROLLER_DATA[id-1]['centre']
-                right[id-1] = CONTROLLER_DATA[id-1]['right']
-                queue[id-1] = CONTROLLER_DATA[id-1]['Total']
-                cons_slots[id-1] = CONTROLLER_DATA[id-1]['Consecutive_Slots']
-                total_slots[id-1] = CONTROLLER_DATA[id-1]['Total_slots']
-                current_status[id-1] = CONTROLLER_DATA[id-1]['Status']
+                print(x)
+                left[x-1] = CONTROLLER_DATA[x-1]['left']
+                centre[x-1] = CONTROLLER_DATA[x-1]['centre']
+                right[x-1] = CONTROLLER_DATA[x-1]['right']
+                queue[x-1] = CONTROLLER_DATA[x-1]['Total']
+                cons_slots[x-1] = CONTROLLER_DATA[x-1]['Consecutive_Slots']
+                total_slots[x-1] = CONTROLLER_DATA[x-1]['Total_Slots']
+                current_status[x-1] = CONTROLLER_DATA[x-1]['Status']
             else:
                 continue
     else:
@@ -191,14 +192,14 @@ def base_process():
     global START_SUCCESS #Check how to use shared flag from failsafe thread
     READ_QUEUE_FLAG = True
  
-    while(not(START_SUCCESS) and (not FAILSAFE_EVENT)):
+    while(not(START_SUCCESS.is_set()) and (not FAILSAFE_EVENT)):
         continue
    
     print("DATA STARTED")
  
     row = 0
     #Starting the queue reading, ntp start time is required,
-    while(START_SUCCESS):
+    while(START_SUCCESS.is_set()):
         if(time.struct_time(time.localtime())>RECIEVED_START_TIME):
             if(not(FAILSAFE_EVENT)):
                 if(READ_QUEUE_FLAG):
@@ -208,10 +209,9 @@ def base_process():
                     READ_QUEUE_FLAG = False
                     if(queue[CONTROLLER_ID-1]>0):
                         broadcast(CONTROLLER_ID)
-                    while(not DATA_SUCCESS):
-                        continue
+                    DATA_SUCCESS.wait()
                     state_table_update(CONTROLLER_ID)
-                    DATA_SUCCESS = False
+                    DATA_SUCCESS.clear()
                     prev_queue_top = decision(queue)
                 else:
                     continue
@@ -233,9 +233,9 @@ def time_update():
     global FAILSAFE_EVENT
     global SLOT_TIME
 
-    while(not(START_SUCCESS) and not(FAILSAFE_EVENT)):
+    while(not(START_SUCCESS.is_set()) and not(FAILSAFE_EVENT)):
         pass
-    while(START_SUCCESS):
+    while(START_SUCCESS.is_set()):
         if(not FAILSAFE_EVENT):
             if(time.localtime()>RECIEVED_START_TIME):
                 time.sleep(SLOT_TIME)
