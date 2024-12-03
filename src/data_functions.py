@@ -208,10 +208,9 @@ def base_process():
                     READ_QUEUE_FLAG = False
                     if(queue[CONTROLLER_ID-1]>0):
                         broadcast(CONTROLLER_ID)
-                    while(not DATA_SUCCESS):
-                        continue
+                    DATA_SUCCESS.wait()
                     state_table_update(CONTROLLER_ID)
-                    DATA_SUCCESS = False
+                    DATA_SUCCESS.clear()
                     prev_queue_top = decision(queue)
                 else:
                     continue

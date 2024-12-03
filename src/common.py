@@ -5,6 +5,7 @@ import ntplib
 import json
 import socket
 import threading
+from threading import Event
 # import RPi.GPIO as GPIO
  
 # GPIO Pin Definitions
@@ -24,7 +25,7 @@ FAIL_SAFE_ACK_RECEIVED = False
 
 SYNC_SUCCESS = True
 START_SUCCESS = True
-DATA_SUCCESS = False
+DATA_SUCCESS = Event()
 
 MASTER_SYNC_SUCCESS = True
 RECIEVED_START_TIME = time.localtime()
