@@ -207,7 +207,7 @@ def base_process():
                     queue[CONTROLLER_ID-1] += read_queue(CONTROLLER_ID,row)
                     READ_QUEUE_FLAG = False
                     if(queue[CONTROLLER_ID-1]>0):
-                        broadcast(ID)
+                        broadcast(CONTROLLER_ID)
                     while(not DATA_SUCCESS):
                         continue
                     state_table_update(CONTROLLER_ID)

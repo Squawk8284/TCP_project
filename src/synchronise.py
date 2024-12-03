@@ -231,9 +231,11 @@ def reliable_data_receiver():
     global DATA_SUCCESS
 
     while(not(FAILSAFE_EVENT) and START_SUCCESS):
+        received_acks = set()
         while(None in CONTROLLER_DATA):
             received_pkt = next(multicast_recieve())
-            if(received_pkt["type"]=="data" and received_pkt["controller_id"]!=CONTROLLER_ID):
+            if(received_pkt["type"]=="data" and (received_pkt["controller_id"] not in received_acks)):
+                received_acks.add(received_pkt["controller_id"])
                 parsed_data = {
                     "left": received_pkt.get("left"),
                     "centre": received_pkt.get("centre"),
@@ -248,8 +250,6 @@ def reliable_data_receiver():
                 print(CONTROLLER_DATA[ID-1])
                 multicast_send(DATA_ACK_MESSAGE)
                 #print("Sent DATA ACK for controller", ID)
-
-        DATA_SUCCESS = True
 
 
 
@@ -268,16 +268,16 @@ def reliable_data_transmit_and_receive_ack(DATA_MESSAGE):
         multicast_send(DATA_MESSAGE)
         print("Sent DATA MESSAGE")
            
-        while len(received_acks) < DEVICES-1:
+        while len(received_acks) < DEVICES:
            
             received_pkt = next(multicast_recieve())
             time.sleep(RTO)
            
-            if(received_pkt["type"]=="data_ack" and received_pkt["controller_id"]!=CONTROLLER_ID and (received_pkt["controller_id"] not in received_acks)):
+            if(received_pkt["type"]=="data_ack" and (received_pkt["controller_id"] not in received_acks)):
                 print(received_pkt)
                 received_acks.add(received_pkt["controller_id"])
  
-                if len(received_acks) == DEVICES-1:
+                if len(received_acks) == DEVICES:
                     received_acks = set()
                     RETRIES = 0
                     DATA_SUCCESS = True
