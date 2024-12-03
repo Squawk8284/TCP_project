@@ -167,12 +167,13 @@ def state_table_update(id):
     if(not(FAILSAFE_EVENT)):
         for x in ID:
             if(x != id):
+                print(x)
                 left[x-1] = CONTROLLER_DATA[x-1]['left']
                 centre[x-1] = CONTROLLER_DATA[x-1]['centre']
                 right[x-1] = CONTROLLER_DATA[x-1]['right']
                 queue[x-1] = CONTROLLER_DATA[x-1]['Total']
                 cons_slots[x-1] = CONTROLLER_DATA[x-1]['Consecutive_Slots']
-                total_slots[x-1] = CONTROLLER_DATA[x-1]['Total_slots']
+                total_slots[x-1] = CONTROLLER_DATA[x-1]['Total_Slots']
                 current_status[x-1] = CONTROLLER_DATA[x-1]['Status']
             else:
                 continue
