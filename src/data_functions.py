@@ -28,27 +28,33 @@ prev_queue_top = -1
 
 def read_queue(id,row,file = FILE_PATH):
     global left, right, centre
-    file_name = file
-    target_row = row
-    queue_sum = 0
-    with open(file_name,"r") as file:
-        for line_number,line in enumerate(file, start=1):
-            if line_number == target_row:
-                line = line.strip()
-                x,y,z = map(int,line.split())
-                queue_sum = x+y+z
-                left[id-1] += x
-                centre[id-1]+= y
-                right[id-1] += z
-                #print("The sum of {x},{y},{z} is {queue_sum}\n")
+    if(not(FAILSAFE_EVENT)):
+        file_name = file
+        target_row = row
+        queue_sum = 0
+        with open(file_name,"r") as file:
+            for line_number,line in enumerate(file, start=1):
+                if line_number == target_row:
+                    line = line.strip()
+                    x,y,z = map(int,line.split())
+                    queue_sum = x+y+z
+                    left[id-1] += x
+                    centre[id-1]+= y
+                    right[id-1] += z
+                    #print("The sum of {x},{y},{z} is {queue_sum}\n")
+                    return queue_sum
+            else:
+                print(f"Row {target_row} doesnt exist in file {file_name}")
                 return queue_sum
-        else:
-            print(f"Row {target_row} doesnt exist in file {file_name}")
-            return queue_sum
+    else:
+        fail_safe_transmitter()
 
 def calculate_queue(id,row):
     global queue
-    queue[id-1] += read_queue(id,row)
+    if(not(FAILSAFE_EVENT)):
+        queue[id-1] += read_queue(id,row)
+    else:
+        fail_safe_transmitter()
 
 def update(x):
     global min_slot_flag,current_slot,queue,cons_slots,total_slots,prev_slot,prev_slots_total
@@ -56,81 +62,91 @@ def update(x):
     global left, right, centre
     global current_status, N
 
-    min_slot_flag = 0  #Resetting minimum slot criteria flag
-    current_slot += 1
-    if(current_slot == N+1 or prev_queue_top == -1):
-        current_slot = 0
-        cons_slots = [0,0,0,0]
-        total_slots = [0,0,0,0]
-        prev_slot = False
-        prev_slots_total = [prev_slot,False,False,False]
-    if(x == CONTROLLER_ID-1):
-        if(left[x]>10):
-            left[x] = left[x]-10
-        else:
-            left[x] = 0
-    
-        if(right[x]>10):
-            right[x] = right[x]-10
-        else:
-            right[x] = 0
+    if(not(FAILSAFE_EVENT)):
+        min_slot_flag = 0  #Resetting minimum slot criteria flag
+        current_slot += 1
+        if(current_slot == N+1 or prev_queue_top == -1):
+            current_slot = 0
+            cons_slots = [0,0,0,0]
+            total_slots = [0,0,0,0]
+            prev_slot = False
+            prev_slots_total = [prev_slot,False,False,False]
+        if(x == CONTROLLER_ID-1):
+            if(left[x]>10):
+                left[x] = left[x]-10
+            else:
+                left[x] = 0
+        
+            if(right[x]>10):
+                right[x] = right[x]-10
+            else:
+                right[x] = 0
 
-        if(centre[x]>10):
-            centre[x] = centre[x]-10
+            if(centre[x]>10):
+                centre[x] = centre[x]-10
+            else:
+                centre[x] = 0
+            queue[x] = left[x]+right[x]+centre[x]
+            cons_slots[x] += 1
+            total_slots[x] += 1
+            prev_slots_total[x] = True
+            current_status[x] = "green"
+            gpio_set("green")
         else:
-            centre[x] = 0
-        queue[x] = left[x]+right[x]+centre[x]
-        cons_slots[x] += 1
-        total_slots[x] += 1
-        prev_slots_total[x] = True
-        current_status[x] = "green"
-        gpio_set("green")
+            current_status[x] = "red"
+            gpio_set("red")
     else:
-        current_status[x] = "red"
-        gpio_set("red")
+        fail_safe_transmitter()
 
 def max_queue_resolve(max_list,queue_list):
     global total_slots
-    min_time_slots = []
-    min_time_slots_indices = []
-    print("max_list",max_list)
-    min_time_slots = min([total_slots[x] for x in max_list])
-    print("min_time_slots",min_time_slots)
-    min_time_slots_indices = [value for index,value in enumerate(max_list) if total_slots[value] == min_time_slots]
-    print("min_time_slots_indices",min_time_slots_indices)
-    if(len(min_time_slots_indices)>1):
-        return min_time_slots_indices[0]
+
+    if(not(FAILSAFE_EVENT)):
+        min_time_slots = []
+        min_time_slots_indices = []
+        print("max_list",max_list)
+        min_time_slots = min([total_slots[x] for x in max_list])
+        print("min_time_slots",min_time_slots)
+        min_time_slots_indices = [value for index,value in enumerate(max_list) if total_slots[value] == min_time_slots]
+        print("min_time_slots_indices",min_time_slots_indices)
+        if(len(min_time_slots_indices)>1):
+            return min_time_slots_indices[0]
+        else:
+            return min_time_slots_indices[0]
     else:
-        return min_time_slots_indices[0]
+        fail_safe_transmitter()
 
 def decision(queue_list = None):
     global min_slot_flag
     global N
     global total_slots, cons_slots, current_slot
-    if queue_list is None:
-        queue_list = queue
-    queue_top = -1
-    max_value = max(queue_list)
-    zero_indices = [index for index,value in enumerate(total_slots) if value == 0]
-    max_indices = [index for index, value in enumerate(queue_list) if value == max_value]
-    #print(max_indices)
-    if(len(max_indices)>1):
-        queue_top = max_queue_resolve(max_indices,queue_list)
-        print("queue_top is",queue_top)
-    else:
-        queue_top = max_indices[0]
-    if(min_slot_flag == 0):
-        if(N-current_slot>len(zero_indices)):
-            if(cons_slots[queue_top] == 3):
-                filtered_list = [-1 if value == max_value else value for value in queue_list]
-                queue_top = decision(filtered_list)
+    if(not(FAILSAFE_EVENT)):
+        if queue_list is None:
+            queue_list = queue
+        queue_top = -1
+        max_value = max(queue_list)
+        zero_indices = [index for index,value in enumerate(total_slots) if value == 0]
+        max_indices = [index for index, value in enumerate(queue_list) if value == max_value]
+        #print(max_indices)
+        if(len(max_indices)>1):
+            queue_top = max_queue_resolve(max_indices,queue_list)
+            print("queue_top is",queue_top)
         else:
-            min_slot_flag = 1
-            filtered_list = [-1 if value != 0 else value for value in total_slots]
-            print(filtered_list)
-            queue_top = decision(filtered_list)
-            print(queue_top)
-    return queue_top
+            queue_top = max_indices[0]
+        if(min_slot_flag == 0):
+            if(N-current_slot>len(zero_indices)):
+                if(cons_slots[queue_top] == 3):
+                    filtered_list = [-1 if value == max_value else value for value in queue_list]
+                    queue_top = decision(filtered_list)
+            else:
+                min_slot_flag = 1
+                filtered_list = [-1 if value != 0 else value for value in total_slots]
+                print(filtered_list)
+                queue_top = decision(filtered_list)
+                print(queue_top)
+        return queue_top
+    else:
+        fail_safe_transmitter()
 
 
 def broadcast(CONTROLLER_ID):
@@ -138,24 +154,30 @@ def broadcast(CONTROLLER_ID):
     #cons_slots[id],total_slots[id],left[0],centre
     # [0],right[0],queue[0],current_status[0]
     global left,centre,right,queue,cons_slots,total_slots,current_status,current_slot
-    DATA_MESSAGE = {"type": "data","controller_id": CONTROLLER_ID,"left":left[CONTROLLER_ID-1],"centre":centre[CONTROLLER_ID-1],"right":right[CONTROLLER_ID-1],"Total":queue[CONTROLLER_ID-1],"Consecutive_Slots":cons_slots[CONTROLLER_ID-1],"Total_Slots":total_slots[CONTROLLER_ID-1],"Slot":current_slot,"LED_state":current_status[CONTROLLER_ID-1]}
-    reliable_data_transmit_and_receive_ack(DATA_MESSAGE)
+    if(not(FAILSAFE_EVENT)):
+        DATA_MESSAGE = {"type": "data","controller_id": CONTROLLER_ID,"left":left[CONTROLLER_ID-1],"centre":centre[CONTROLLER_ID-1],"right":right[CONTROLLER_ID-1],"Total":queue[CONTROLLER_ID-1],"Consecutive_Slots":cons_slots[CONTROLLER_ID-1],"Total_Slots":total_slots[CONTROLLER_ID-1],"Slot":current_slot,"LED_state":current_status[CONTROLLER_ID-1]}
+        reliable_data_transmit_and_receive_ack(DATA_MESSAGE)
+    else:
+        fail_safe_transmitter()
 
 def state_table_update(id):
     global CONTROLLER_DATA
     global ID
     global left,centre,right,queue,cons_slots,total_slots,current_status
-    for x in ID:
-        if(x != id):
-            left[id-1] = CONTROLLER_DATA[id-1]['left']
-            centre[id-1] = CONTROLLER_DATA[id-1]['centre']
-            right[id-1] = CONTROLLER_DATA[id-1]['right']
-            queue[id-1] = CONTROLLER_DATA[id-1]['Total']
-            cons_slots[id-1] = CONTROLLER_DATA[id-1]['Consecutive_Slots']
-            total_slots[id-1] = CONTROLLER_DATA[id-1]['Total_slots']
-            current_status[id-1] = CONTROLLER_DATA[id-1]['Status']
-        else:
-            continue
+    if(not(FAILSAFE_EVENT)):
+        for x in ID:
+            if(x != id):
+                left[id-1] = CONTROLLER_DATA[id-1]['left']
+                centre[id-1] = CONTROLLER_DATA[id-1]['centre']
+                right[id-1] = CONTROLLER_DATA[id-1]['right']
+                queue[id-1] = CONTROLLER_DATA[id-1]['Total']
+                cons_slots[id-1] = CONTROLLER_DATA[id-1]['Consecutive_Slots']
+                total_slots[id-1] = CONTROLLER_DATA[id-1]['Total_slots']
+                current_status[id-1] = CONTROLLER_DATA[id-1]['Status']
+            else:
+                continue
+    else:
+        fail_safe_transmitter()
     
 def base_process():
     global prev_queue_top
@@ -168,12 +190,12 @@ def base_process():
     global queue
     global START_SUCCESS #Check how to use shared flag from failsafe thread
     READ_QUEUE_FLAG = True
-
+ 
     while(not(START_SUCCESS) and (not FAILSAFE_EVENT)):
         continue
-    
+   
     print("DATA STARTED")
-
+ 
     row = 0
     #Starting the queue reading, ntp start time is required,
     while(START_SUCCESS):
@@ -183,16 +205,17 @@ def base_process():
                     update(prev_queue_top)
                     row += 1
                     queue[CONTROLLER_ID-1] += read_queue(CONTROLLER_ID,row)
-                    if(DATA_SUCCESS):
-                        state_table_update(CONTROLLER_ID)
-                        DATA_SUCCESS = False
-                    if(queue[CONTROLLER_ID-1] > 0):
-                        prev_queue_top = decision(queue)
-                        broadcast(CONTROLLER_ID)
-                        READ_QUEUE_FLAG = False
-                    else :
+                    READ_QUEUE_FLAG = False
+                    if(queue[CONTROLLER_ID-1]>0):
+                        broadcast(ID)
+                    while(not DATA_SUCCESS):
                         continue
-                    
+                    state_table_update(CONTROLLER_ID)
+                    DATA_SUCCESS = False
+                    prev_queue_top = decision(queue)
+                else:
+                    continue
+                   
                 #After Every time slot show the precalculated values.
                 green_indices = [index for index,value in enumerate(total_slots) if value == "green"]
                 if(len(green_indices)>1):
@@ -202,6 +225,7 @@ def base_process():
                 fail_safe_transmitter()
         else:
             continue
+
 
 def time_update():
     global READ_QUEUE_FLAG
