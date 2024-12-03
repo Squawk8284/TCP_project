@@ -261,6 +261,7 @@ def reliable_data_transmit_and_receive_ack(DATA_MESSAGE):
     global DEVICES
     global DATA_SUCCESS
     global CONTROLLER_ID
+    global RTO
 
     RETRIES = 0
     received_acks = set()
