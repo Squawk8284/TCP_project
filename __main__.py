@@ -9,6 +9,8 @@ def main():
     print("PROGRAM STARTED ........\n")
 
     gpio_setup()
+    SYNC_SUCCESS.set()
+    START_SUCCESS.set()
 
 
     # if(CONTROLLER_ID==MASTER_CONTROLLER_ID):
